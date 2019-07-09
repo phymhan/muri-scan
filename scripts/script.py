@@ -2,15 +2,20 @@ import os
 from datetime import datetime
 import math
 import skvideo.io
+import argparse
 
 def time2sec(s):
     s_ = s.split(':')
     return float(s_[0])*3600 + float(s_[1])*60 + float(s_[2])
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--round', type=int, default=3)
+args = parser.parse_args()
+
 FMT = '%H:%M:%S'
 # src_lin = '/media/ligong/Picasso/Share/muridata/muri_videos'
 src_lin = '/home/lh599/muridata/muri_videos'
-dst = '/home/lh599/Research/MURI/clips/r3'
+dst = '/home/lh599/Research/MURI/clips/all_rounds'
 
 ## data on server
 # ZAM is not included because of folder naming is inconsistent
@@ -46,8 +51,7 @@ cnt_player = 0
 with open('round_timestamps.csv', 'r') as f:
     ts = f.readlines()
 ts_title = ts[0].split(',')
-# round 3
-R = 3
+R = args.round  # round
 start_j = ts_title.index(f'R{R}_ding')
 stop_j = ts_title.index(f'R{R+1}_ding')
 
@@ -80,6 +84,8 @@ for loc in locs:
                 player_no = int(p_[1][1:])
                 file_in = os.path.join(src_lin, loc, game, player)
                 player_new = f'{loc}_{game_no}_{player_no}_R{R}_.mp4'
+                if player_new in os.listdir(os.path.join(dst)):
+                    continue
                 file_out = os.path.join(dst, player_new)
                 meta = skvideo.io.ffprobe(file_in)
                 if 'video' not in meta:
