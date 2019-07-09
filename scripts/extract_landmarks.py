@@ -4,7 +4,7 @@ import glob
 from datetime import datetime
 import skvideo.io
 import shutil
-from .facial_landmarks import get_heatmap_from_image
+from facial_landmarks import get_heatmap_from_image
 import face_alignment
 from PIL import Image
 import torch
@@ -31,7 +31,7 @@ fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._3D, face_detecto
 
 vidfiles = [os.path.basename(s) for s in glob.glob(os.path.join(src, '*.mp4'))]
 for filename in vidfiles:
-    file_in = os.path.join(src, did, filename)
+    file_in = os.path.join(src, filename)
     file_out = os.path.join(dst_vid, filename)
     txt_out = os.path.join(dst_txt, filename.replace('.mp4', '.txt'))
     video_data = skvideo.io.vread(file_in)
@@ -48,6 +48,7 @@ for filename in vidfiles:
             frame = (lm.cpu().numpy() * 255).transpose((1, 2, 0)).astype(numpy.uint8)
             writer.writeFrame(frame)
             f.write(f'{i} ' + ' '.join(map(str, pt.view(-1).numpy())) + '\n')
-            print(f'--> frame {i}')
+            if i % 1000 == 0:
+                print(f'--> frame {i}')
     writer.close()
     print('-> %s' % file_out)
