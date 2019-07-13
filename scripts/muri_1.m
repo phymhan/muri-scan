@@ -26,7 +26,8 @@ end
 %% convert img to vid
 [~, name, ~] = fileparts(in_file);
 output_aligned_dir = sprintf('%s/%s_aligned/', output_dir, name);
-command_2 = sprintf('ffmpeg -r 30 -f image2 -i %s/frame_det_00_%06d.bmp -vcodec libx264 -crf 25 -pix_fmt yuv420p aligned.mp4', output_aligned_dir);
+output_aligned_path = fullfile(output_aligned_dir, '..', 'aligned.mp4');
+command_2 = sprintf('ffmpeg -r 30 -f image2 -i %s/frame_det_00_%06d.bmp -vcodec libx264 -crf 25 -pix_fmt yuv420p %s', output_aligned_dir, output_aligned_path);
 if(isunix)
     unix(command_2);
 else
