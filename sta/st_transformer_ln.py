@@ -1,7 +1,7 @@
 import torchvision
 import torch.nn as nn
 import torch
-from .gcn_layer import GraphConvolution
+from gcn_layer import GraphConvolution
 import numpy as np
 from torch.autograd import Variable
 import math, copy
