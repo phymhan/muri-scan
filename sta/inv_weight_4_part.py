@@ -41,7 +41,7 @@ class Partition_layer(nn.Module):
             self.initialize_weights(self.t_bn)
 
 
-        self.joint_num = 22
+        self.joint_num = 68
 
         #edge_weight
         if self.use_edge_weight :
@@ -264,8 +264,8 @@ class Invweight_4_part(nn.Module):
     def __init__(self, num_classes,dp_rate):
         super(Invweight_4_part, self).__init__()
         self.feature_size = 3
-        self.joints_num = 22
-        self.T = 8
+        self.joints_num = 68
+        self.T = 32
 
         #self.input_bn = nn.BatchNorm1d(self.feature_size)
         #self.initialize_weights(self.input_bn)

@@ -119,7 +119,7 @@ class Trans_branch(nn.Module):
     def __init__(self, input_size, use_graph,dp_rate):
         super(Trans_branch, self).__init__()
 
-        self.time_len = 8
+        self.time_len = 32
         h_dim = 32
         h_num= 8
         self.dp_rate = dp_rate

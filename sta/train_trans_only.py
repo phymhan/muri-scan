@@ -9,6 +9,7 @@ import time
 from tensorboardX import SummaryWriter
 import argparse
 import os
+import data.
 
 from model.transformer_only import *
 
@@ -52,6 +53,7 @@ parser.add_argument('--lr_decay_factor', type=float, default=0.1,
 
 
 def init_data_loader(test_subject_id, args, cfg):
+    
 
     train_data, test_data = get_train_test_data(test_subject_id, cfg)
 
@@ -157,7 +159,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print(args)
 
-    model_fold = "/gpu2/yc984/hand/model/{}_dp-{}_lr-{}_g-{}_dc-{}/".format("trans_only", args.dp_rate, args.learning_rate, bool(args.use_graph), args.data_cfg)
+    model_fold = "/home/lh599/Active/muri-scan/model/{}_dp-{}_lr-{}_g-{}_dc-{}/".format("trans_only", args.dp_rate, args.learning_rate, bool(args.use_graph), args.data_cfg)
     try:
         os.mkdir(model_fold)
     except:
@@ -184,7 +186,7 @@ if __name__ == "__main__":
 
     #.........tensorboard
     now = datetime.now()
-    log_path = "/gpu2/yc984/hand/log/{}_dp-{}_lr-{}_g-{}_dc-{}/{}/sub_id-{}/".format("trans_only", args.dp_rate, args.learning_rate, bool(args.use_graph), args.data_cfg, now.strftime("%Y%m%d-%H%M%S"), test_subject_id)
+    log_path = "/home/lh599/Active/muri-scan/log/{}_dp-{}_lr-{}_g-{}_dc-{}/{}/sub_id-{}/".format("trans_only", args.dp_rate, args.learning_rate, bool(args.use_graph), args.data_cfg, now.strftime("%Y%m%d-%H%M%S"), test_subject_id)
     writer = SummaryWriter(log_path)
 
     #..........parameters use to show traing status

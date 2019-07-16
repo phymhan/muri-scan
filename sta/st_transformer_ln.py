@@ -27,7 +27,7 @@ class PositionalEncoding(nn.Module):
 
     def __init__(self, d_model, dp_rate, time_len, domain):
         super(PositionalEncoding, self).__init__()
-        self.joint_num = 22
+        self.joint_num = 68
         self.time_len = time_len
 
         self.domain = domain
