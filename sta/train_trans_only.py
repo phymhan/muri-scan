@@ -29,30 +29,29 @@ parser.add_argument('--patiences', default=100, type=int,
 parser.add_argument('--class_num', default=2, type=int,
                     help='number of class')  # 1000
 
-parser.add_argument('--test_subject_id', type=int,
-                    help='id of test subject')  # 1000
+# parser.add_argument('--test_subject_id', type=int,
+#                     help='id of test subject')  # 1000
 
-parser.add_argument('--random_seed', type=int,
+parser.add_argument('--random_seed', type=int, default=0,
                     help='random seed for init parameters')  # 1000
 
-parser.add_argument('--data_cfg', type=int,
+parser.add_argument('--data_cfg', type=int, default=1,
                     help='0 for 14 class, 8 for 28')  # 1000
-
 
 parser.add_argument('--att_loss_W', default=1, type=float,
                     help='0 for 14 class, 8 for 28')  # 1000
 
-parser.add_argument('--use_graph', type=int,
+parser.add_argument('--use_graph', type=int, default=1,
                     help='wether add graph constrains to graph')  # 1000
 
-parser.add_argument('--dp_rate', type=float,
+parser.add_argument('--dp_rate', type=float, default=0.1,
                     help='dropout rate')  # 1000
 
 parser.add_argument('--lr_decay_factor', type=float, default=0.1,
                     help='dropout rate')  # 1000
 
 
-def init_data_loader(test_subject_id, args, cfg):
+def init_data_loader(args):
     
     train_dataset = data.MURI_Dataset('/home/lh599/Research/MURI/openface/clips-r3', 'filelist_0.txt', 'labels.txt', 32)
     test_dataset = data.MURI_Dataset('/home/lh599/Research/MURI/openface/clips-r3', 'filelist_0.txt', 'labels.txt', 32)
@@ -168,10 +167,10 @@ if __name__ == "__main__":
     #........get data loader
     #test_subject_id = 1
 
-    test_subject_id = args.test_subject_id
+    # test_subject_id = args.test_subject_id
 
-    print("test_subject_id: ", test_subject_id)
-    train_loader, val_loader = init_data_loader(test_subject_id, args, cfg=args.data_cfg)
+    # print("test_subject_id: ", test_subject_id)
+    train_loader, val_loader = init_data_loader(args)
 
 
     #.........inital model
@@ -239,9 +238,13 @@ if __name__ == "__main__":
         writer.add_scalar('Train/Loss', train_loss.data, epoch)
         writer.add_scalar('Train/Accuracy', train_acc, epoch)
 
-        print("*** Subject_ID: [%2d]  Epoch: [%2d] time: %4.4f, "
+        # print("*** Subject_ID: [%2d]  Epoch: [%2d] time: %4.4f, "
+        #       "cls_loss: %.4f  train_ACC: %.6f ***"
+        #       % (test_subject_id, epoch + 1,  time.time() - start_time,
+        #          train_loss.data, train_acc))
+        print("*** Epoch: [%2d] time: %4.4f, "
               "cls_loss: %.4f  train_ACC: %.6f ***"
-              % (test_subject_id, epoch + 1,  time.time() - start_time,
+              % (epoch + 1,  time.time() - start_time,
                  train_loss.data, train_acc))
         start_time = time.time()
 
@@ -277,10 +280,14 @@ if __name__ == "__main__":
             writer.add_scalar('Test/Loss', val_loss.data, epoch)
             writer.add_scalar('Test/Accuracy', val_cc, epoch)
 
-            print("*** Subject_ID: [%2d]  Epoch: [%2d], "
+            # print("*** Subject_ID: [%2d]  Epoch: [%2d], "
+            #       "val_loss: %.6f,"
+            #       "val_ACC: %.6f ***"
+            #       % (test_subject_id, epoch + 1, val_loss, val_cc))
+            print("*** Epoch: [%2d], "
                   "val_loss: %.6f,"
                   "val_ACC: %.6f ***"
-                  % (test_subject_id, epoch + 1, val_loss, val_cc))
+                  % (epoch + 1, val_loss, val_cc))
 
             #save model
             if val_cc > max_acc:
@@ -289,7 +296,8 @@ if __name__ == "__main__":
                 decay_count = 0
                 val_cc = round(val_cc, 10)
 
-                outf_path = model_fold + "sub-{}".format(test_subject_id)
+                # outf_path = model_fold + "sub-{}".format(test_subject_id)
+                outf_path = model_fold + "hhh"
 
                 if not os.path.exists(outf_path):
                     os.mkdir(outf_path)
