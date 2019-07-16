@@ -14,7 +14,7 @@ class MURI_Dataset(data.Dataset):
         self.cols = [f'X_{i}' for i in range(68)] + [f'Y_{i}' for i in range(68)] + [f'Z_{i}' for i in range(68)]
         with open(labellist, 'r') as f:
             labels = f.readlines()
-        self.labels = {l[0]: int(l[1]) for l in labels}
+        self.labels = {l.split()[0]: int(l.split()[1]) for l in labels}
 
     def __getitem__(self, index):
         name, time_start = self.filelist[index].split()
