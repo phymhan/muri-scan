@@ -9,7 +9,7 @@ import time
 from tensorboardX import SummaryWriter
 import argparse
 import os
-import data.
+import data
 
 from model.transformer_only import *
 
@@ -54,12 +54,13 @@ parser.add_argument('--lr_decay_factor', type=float, default=0.1,
 
 def init_data_loader(test_subject_id, args, cfg):
     
+    train_dataset = data.MURI_Dataset('/home/lh599/Research/MURI/openface/clips-r3', 'filelist_0.txt', 'labels.txt', 32)
+    test_dataset = data.MURI_Dataset('/home/lh599/Research/MURI/openface/clips-r3', 'filelist_0.txt', 'labels.txt', 32)
+    # train_data, test_data = get_train_test_data(test_subject_id, cfg)
 
-    train_data, test_data = get_train_test_data(test_subject_id, cfg)
+    # train_dataset = DHS_Dataset(train_data, use_data_aug = True, time_len = 8, sample_strategy = "equi_T")
 
-    train_dataset = DHS_Dataset(train_data, use_data_aug = True, time_len = 8, sample_strategy = "equi_T")
-
-    test_dataset = DHS_Dataset(test_data, use_data_aug = False, time_len = 8, sample_strategy = "equi_T")
+    # test_dataset = DHS_Dataset(test_data, use_data_aug = False, time_len = 8, sample_strategy = "equi_T")
 
     print("train data num: ",len(train_dataset))
     print("test data num: ",len(test_dataset))
