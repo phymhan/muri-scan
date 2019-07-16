@@ -26,3 +26,6 @@ class MURI_Dataset(data.Dataset):
             frame_list.append(one_frame.reshape((3, 68)).T)
         frame_list_ = np.stack(frame_list)
         return {'skeleton': frame_list_, 'label': label}
+    
+    def __len__(self):
+        return len(self.filelist)
