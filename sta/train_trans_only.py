@@ -183,7 +183,7 @@ if __name__ == "__main__":
 
     #.........tensorboard
     now = datetime.now()
-    log_path = "/home/lh599/Active/muri-scan/log/{}_dp-{}_lr-{}_g-{}_dc-{}/{}/sub_id-{}/".format("trans_only", args.dp_rate, args.learning_rate, bool(args.use_graph), args.data_cfg, now.strftime("%Y%m%d-%H%M%S"), test_subject_id)
+    log_path = "/home/lh599/Active/muri-scan/log/{}_dp-{}_lr-{}_g-{}_dc-{}/{}/".format("trans_only", args.dp_rate, args.learning_rate, bool(args.use_graph), args.data_cfg, now.strftime("%Y%m%d-%H%M%S"))
     writer = SummaryWriter(log_path)
 
     #..........parameters use to show traing status
