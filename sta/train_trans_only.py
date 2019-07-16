@@ -26,7 +26,7 @@ parser.add_argument('--epochs', default=300, type=int, metavar='N',
 parser.add_argument('--patiences', default=100, type=int,
                     help='number of epochs to tolerate the no improvement of val_loss')  # 1000
 
-parser.add_argument('--class_num', default=14, type=int,
+parser.add_argument('--class_num', default=2, type=int,
                     help='number of class')  # 1000
 
 parser.add_argument('--test_subject_id', type=int,
@@ -81,10 +81,7 @@ def init_data_loader(test_subject_id, args, cfg):
     return train_loader, val_loader
 
 def init_model(data_cfg):
-    if data_cfg == 0:
-        class_num = 14
-    elif data_cfg == 1:
-        class_num = 28
+    class_num = 2
 
     model = Trans_only(class_num, bool(args.use_graph), args.dp_rate)
     model = torch.nn.DataParallel(model).cuda()
