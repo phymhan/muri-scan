@@ -18,13 +18,17 @@ class MURI_Dataset(data.Dataset):
 
     def __getitem__(self, index):
         name, time_start = self.filelist[index].split()
+        time_start = 1
         label = self.labels[name.replace('_R3', '')]
-        csv = pd.read_csv(os.path.join(self.dataroot, name, f'{name}.csv'), name=self.cols)
+        csv = pd.read_csv(os.path.join(self.dataroot, name, f'{name}.csv'), names=self.cols)
         frame_list = []
-        for i in range(time_start, time_start+self.time_len*self.time_step, self.time_step):
-            one_frame = csv.iloc[i].as_matrix()
+        for i in range(int(time_start), int(time_start)+self.time_len*self.time_step, self.time_step):
+            #print(i)
+            one_frame = csv.iloc[i].as_matrix().astype(np.float)
+            #print(one_frame)
             frame_list.append(one_frame.reshape((3, 68)).T)
-        frame_list_ = np.stack(frame_list)
+        frame_list_ = np.concatenate(frame_list)
+        #print(frame_list_.shape)
         return {'skeleton': frame_list_, 'label': label}
     
     def __len__(self):
