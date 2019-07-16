@@ -1,8 +1,8 @@
-from .transformer_spatial_tempor import *
+#from .transformer_spatial_tempor import *
 import torchvision
 import torch.nn as nn
 import torch
-from .gcn_layer import GraphConvolution
+from gcn_layer import GraphConvolution
 import numpy as np
 import torch.nn.functional as F
 

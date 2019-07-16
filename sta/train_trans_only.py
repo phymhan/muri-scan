@@ -1,6 +1,6 @@
 import torch
-from util.parse_data import *
-from util.data_loader import *
+#from util.parse_data import *
+#from util.data_loader import *
 import torch.optim as optim
 import torch.backends.cudnn as cudnn
 import numpy as np
@@ -11,7 +11,7 @@ import argparse
 import os
 import data
 
-from model.transformer_only import *
+from transformer_only import *
 
 parser = argparse.ArgumentParser()
 
