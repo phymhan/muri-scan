@@ -18,7 +18,7 @@ class MURI_Dataset(data.Dataset):
 
     def __getitem__(self, index):
         name, time_start = self.filelist[index].split()
-        label = self.labels[name.replace('_R3')]
+        label = self.labels[name.replace('_R3', '')]
         csv = pd.read_csv(os.path.join(self.dataroot, name, f'{name}.csv'), name=self.cols)
         frame_list = []
         for i in range(time_start, time_start+self.time_len*self.time_step, self.time_step):
