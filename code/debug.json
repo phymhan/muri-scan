@@ -1,0 +1,22 @@
+{
+    "num_epochs": 10,
+    "batch_size": 128,
+    "num_workers": 8,
+    "learning_rate": 3e-4,
+    "save_summary_steps": 100,
+    "time_len": 24,
+    "time_step": 5,
+    "joint_num": 51,
+    "heads": 8,
+    "latent_dim": 32,
+    "dropout": 0.2,
+    "num_classes": 2,
+    "use_global": 0,
+    "concat_global": 0,
+    "global_feature_dim": 31,
+    "global_embedding_dim": 128,
+    "global_hidden_dim": 32,
+    "global_out_dim": 8,
+    "node_feature_dim": 3,
+    "node_embeeding_dim": 128
+}
