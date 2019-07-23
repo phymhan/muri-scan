@@ -1,0 +1,16 @@
+{
+    "num_epochs": 10,
+    "batch_size": 128,
+    "num_workers": 8,
+    "learning_rate": 3e-4,
+    "save_summary_steps": 100,
+    
+    "time_len": 24,
+    "time_step": 5,
+    "joint_num": 51,
+    "use_global": 0,
+    "heads": 8,
+    "latent_dim": 32,
+    "dropout": 0.2,
+    "num_classes": 2
+}

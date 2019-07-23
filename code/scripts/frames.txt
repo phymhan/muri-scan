@@ -1,0 +1,3 @@
+Train : min 6126 -- max 28382
+Val : min 7291 -- max 25262
+Test : min 7269 -- max 25253
