@@ -11,7 +11,7 @@ global_fs = ['gaze_0_x', 'gaze_0_y', 'gaze_0_z', 'gaze_1_x', 'gaze_1_y', 'gaze_1
 with open('../data/openface/AZ-005_1_R3.csv', 'r') as f:
     h = [hh.strip(' ') for hh in f.readline().rstrip('\n').split(',')]
 col_idx = [h.index(hh) for hh in cols]
-glob_idx = [h.index(hh) for hh in global_fs]
+global_idx = [h.index(hh) for hh in global_fs]
 
 with open('../data/filelist.txt', 'r') as f:
 	files = [i.rstrip('\n') for i in f.readlines()]
@@ -20,7 +20,7 @@ for sample in files:
 	if not os.path.exists('../data/npz/' + '-'.join(sample.split()) + '.npz'):
 		landmarks_list = []
 		landmarks = np.genfromtxt('../data/openface/'+sample.split()[0] + '.csv', delimiter=',')[1:,col_idx]
-		features = np.genfromtxt('../data/openface/'+sample.split()[0] + '.csv', delimiter=',')[1:, glob_idx]
+		features = np.genfromtxt('../data/openface/'+sample.split()[0] + '.csv', delimiter=',')[1:, global_idx]
 		for i in range(int(sample.split()[1]), int(sample.split()[1]) + 900):
 			land = landmarks[i]
 			landmarks_list.append(land.reshape((3, 68-17)).T)
