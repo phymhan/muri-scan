@@ -25,7 +25,7 @@ class Net(nn.Module):
         else:
             self.use_global = True
             self.glb_feat_dim = params.global_feature_dim
-            self.glb_emb_dim = param.global_embedding_dim
+            self.glb_emb_dim = params.global_embedding_dim
             self.glb_hidden_dim = params.global_hidden_dim
             self.glb_out_dim = params.global_out_dim
             self.glb_input_map = nn.Sequential(
@@ -78,8 +78,8 @@ class Net(nn.Module):
         x = self.t_att(x)
         x = x.sum(1) / x.shape[1]
 
-        x_glb = self.glb_input_map(x_glb)   # batch_size x time_len x global_embedding_dim
         if self.use_global:
+            x_glb = self.glb_input_map(x_glb)   # batch_size x time_len x global_embedding_dim
             hidden = self.glb_init_hidden(batch_size)
             for i in range(time_len):
                 emb = x_glb[:, i, :]                     # batch_size x global_embedding_dim

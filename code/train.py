@@ -44,16 +44,16 @@ def train(model, optimizer, loss_fn, dataloader, metrics, params):
 
     # Use tqdm for progress bar
     with tqdm(total=len(dataloader)) as t:
-        for i, (train_batch, labels_batch) in enumerate(dataloader):
+        for i, (train_batch, feat_batch, labels_batch) in enumerate(dataloader):
             # move to GPU if available
             if params.cuda:
-                train_batch, labels_batch = train_batch.cuda(non_blocking=True), labels_batch.cuda(non_blocking=True)
+                train_batch, feat_batch, labels_batch = train_batch.cuda(non_blocking=True), feat_batch.cuda(non_blocking=True), labels_batch.cuda(non_blocking=True)
             # convert to torch Variables
             
-            #train_batch, labels_batch = Variable(train_batch), Variable(labels_batch)
+            # train_batch, labels_batch = Variable(train_batch), Variable(labels_batch)
             
             # compute model output and loss
-            output_batch = model(train_batch)
+            output_batch = model(train_batch, feat_batch)
             loss = loss_fn(output_batch, labels_batch)
 
             # clear previous gradients, compute gradients of all variables wrt loss

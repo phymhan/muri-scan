@@ -33,7 +33,8 @@ class MURI_Dataset(Dataset):
         
         chunk_size = data['landmarks'].shape[0]
         start_idx  = np.random.randint(0, chunk_size - self.time_len*self.time_step)
-        return np.array(data['landmarks'][start_idx:start_idx+self.time_len*self.time_step:self.time_step], dtype='float32'), label
+
+        return np.array(data['landmarks'][start_idx:start_idx+self.time_len*self.time_step:self.time_step], dtype='float32'), np.array(data['features'][start_idx:start_idx+self.time_len*self.time_step:self.time_step, ...], dtype='float32'), label
 
 
 
