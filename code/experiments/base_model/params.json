@@ -18,5 +18,5 @@
     "global_hidden_dim": 32,
     "global_out_dim": 8,
     "node_feature_dim": 3,
-    "node_embeeding_dim": 128
+    "node_embedding_dim": 128
 }
