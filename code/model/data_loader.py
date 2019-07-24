@@ -25,7 +25,6 @@ class MURI_Dataset(Dataset):
 
 
     def __getitem__(self, idx):
-
         player, time_start = self.filelist[idx].split()
         label = self.labels[player.replace('_R3', '')]
         filename = os.path.join(self.dataroot, 'npz', f'{player}-{time_start}.npz')
@@ -34,7 +33,11 @@ class MURI_Dataset(Dataset):
         chunk_size = data['landmarks'].shape[0]
         start_idx  = np.random.randint(0, chunk_size - self.time_len*self.time_step)
 
-        return np.array(data['landmarks'][start_idx:start_idx+self.time_len*self.time_step:self.time_step], dtype='float32'), np.array(data['features'][start_idx:start_idx+self.time_len*self.time_step:self.time_step, ...], dtype='float32'), label
+        node_feat = np.array(data['landmarks'][start_idx:start_idx+self.time_len*self.time_step:self.time_step], dtype='float32')
+        node_feat -= node_feat[0][13]   # substract nodekh
+        global_feat = np.array(data['features'][start_idx:start_idx+self.time_len*self.time_step:self.time_step, ...], dtype='float32')
+
+        return node_feat, global_feat, label
 
 
 

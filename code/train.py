@@ -19,6 +19,7 @@ from evaluate import evaluate
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', default='/dresden/users/as2947/MURI/code/data', help="Directory containing the dataset")
 parser.add_argument('--model_dir', default='experiments/base_model', help="Directory containing params.json")
+parser.add_argument('--json_file', default='params.json')
 parser.add_argument('--restore_file', default=None, help="Optional, name of the file in --model_dir containing weights to reload before training")  # 'best' or 'train'
 
 
@@ -146,7 +147,7 @@ if __name__ == '__main__':
 
     # Load the parameters from json file
     args = parser.parse_args()
-    json_path = os.path.join(args.model_dir, 'params.json')
+    json_path = os.path.join(args.model_dir, args.json_file)
     assert os.path.isfile(json_path), "No json configuration file found at {}".format(json_path)
     params = utils.Params(json_path)
 
@@ -171,14 +172,14 @@ if __name__ == '__main__':
     logging.info("- done.")
     
     # Define the model and optimizer
-    '''    
+    
     if torch.cuda.device_count() > 1:
         print("Let's use", torch.cuda.device_count(), "GPUs!")
         model = nn.DataParallel(net.Net(params)).cuda()
     else:
         model = net.Net(params)
-    ''' 
-    model = net.Net(params).cuda() if params.cuda else net.Net(params) 
+    
+    # model = net.Net(params).cuda() if params.cuda else net.Net(params) 
     optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
 
     # fetch loss function and metrics

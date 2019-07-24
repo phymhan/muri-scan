@@ -1,4 +1,4 @@
 __pycache__
 */*.pkl
 code/data_debug
-experiments/debug
+experiments
