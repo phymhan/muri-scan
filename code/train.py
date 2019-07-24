@@ -15,6 +15,8 @@ import utils
 import model.net as net
 import model.data_loader as data_loader
 from evaluate import evaluate
+from tensorboardX import SummaryWriter
+from tensorboard_logger import configure, log_value
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', default='/dresden/users/as2947/MURI/code/data', help="Directory containing the dataset")
@@ -23,7 +25,7 @@ parser.add_argument('--json_file', default='params.json')
 parser.add_argument('--restore_file', default=None, help="Optional, name of the file in --model_dir containing weights to reload before training")  # 'best' or 'train'
 
 
-def train(model, optimizer, loss_fn, dataloader, metrics, params):
+def train(model, optimizer, loss_fn, dataloader, metrics, params, writer=None, epoch=0):
     """Train the model on `num_steps` batches
 
     Args:
@@ -85,9 +87,12 @@ def train(model, optimizer, loss_fn, dataloader, metrics, params):
     metrics_mean = {metric:np.mean([x[metric] for x in summ]) for metric in summ[0]}
     metrics_string = " ; ".join("{}: {:05.3f}".format(k, v) for k, v in metrics_mean.items())
     logging.info("- Train metrics: " + metrics_string)
+    for metric in metrics_mean:
+        # writer.add_scalar(f'train/{metric}', metrics_mean[metric], epoch)
+        log_value(f'train/{metric}', metrics_mean[metric], epoch)
 
 
-def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, loss_fn, metrics, params, model_dir, restore_file=None):
+def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, loss_fn, metrics, params, model_dir, restore_file=None, writer=None):
     """Train the model and evaluate every epoch.
 
     Args:
@@ -114,10 +119,10 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, loss_
         logging.info("Epoch {}/{}".format(epoch + 1, params.num_epochs))
 
         # compute number of batches in one epoch (one full pass over the training set)
-        train(model, optimizer, loss_fn, train_dataloader, metrics, params)
+        train(model, optimizer, loss_fn, train_dataloader, metrics, params, writer, epoch+1)
 
         # Evaluate for one epoch on validation set
-        val_metrics = evaluate(model, loss_fn, val_dataloader, metrics, params)
+        val_metrics = evaluate(model, loss_fn, val_dataloader, metrics, params, writer, epoch+1)
 
         val_acc = val_metrics['accuracy']
         is_best = val_acc>=best_val_acc
@@ -151,6 +156,8 @@ if __name__ == '__main__':
     assert os.path.isfile(json_path), "No json configuration file found at {}".format(json_path)
     params = utils.Params(json_path)
 
+    # writer = SummaryWriter()
+
     # use GPU if available
     params.cuda = torch.cuda.is_available()
 
@@ -159,7 +166,8 @@ if __name__ == '__main__':
     if params.cuda: torch.cuda.manual_seed(230)
 
     # Set the logger
-    utils.set_logger(os.path.join(args.model_dir, 'train.log'))
+    configure(args.model_dir)
+    logger = utils.set_logger(os.path.join(args.model_dir, 'train.log'))
 
     # Create the input data pipeline
     logging.info("Loading the datasets...")
@@ -188,5 +196,7 @@ if __name__ == '__main__':
 
     # Train the model
     logging.info("Starting training for {} epoch(s)".format(params.num_epochs))
-    train_and_evaluate(model, train_dl, val_dl, optimizer, loss_fn, metrics, params, args.model_dir, args.restore_file)
+    train_and_evaluate(model, train_dl, val_dl, optimizer, loss_fn, metrics, params, args.model_dir, args.restore_file, writer=None)
     
+    writer.export_scalars_to_json(os.path.join(args.model_dir, 'all_scalars.json'))
+    writer.close()

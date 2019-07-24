@@ -87,6 +87,7 @@ def set_logger(log_path):
         stream_handler = logging.StreamHandler()
         stream_handler.setFormatter(logging.Formatter('%(message)s'))
         logger.addHandler(stream_handler)
+    return logger
 
 
 def save_dict_to_json(d, json_path):

@@ -10,6 +10,7 @@ from torch.autograd import Variable
 import utils
 import model.net as net
 import model.data_loader as data_loader
+from tensorboard_logger import log_value
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', default='/dresden/users/as2947/MURI/code/data', help="Directory containing the dataset")
@@ -17,7 +18,7 @@ parser.add_argument('--model_dir', default='experiments/base_model', help="Direc
 parser.add_argument('--restore_file', default='best', help="name of the file in --model_dir containing weights to load")
 
 
-def evaluate(model, loss_fn, dataloader, metrics, params):
+def evaluate(model, loss_fn, dataloader, metrics, params, writer=None, epoch=0):
     """Evaluate the model on `num_steps` batches.
 
     Args:
@@ -61,6 +62,9 @@ def evaluate(model, loss_fn, dataloader, metrics, params):
     metrics_mean = {metric:np.mean([x[metric] for x in summ]) for metric in summ[0]} 
     metrics_string = " ; ".join("{}: {:05.3f}".format(k, v) for k, v in metrics_mean.items())
     logging.info("- Eval metrics : " + metrics_string)
+    for metric in metrics_mean:
+        # writer.add_scalar(f'val/{metric}', metrics_mean[metric], epoch)
+        log_value(f'val/{metric}', metrics_mean[metric], epoch)
     return metrics_mean
 
 
