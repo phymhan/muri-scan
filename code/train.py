@@ -180,12 +180,15 @@ if __name__ == '__main__':
     logging.info("- done.")
     
     # Define the model and optimizer
-    
+    if params.global_only == 0:
+        net_fn = net.Net
+    else:
+        net_fn = net.Net2
     if torch.cuda.device_count() > 1:
         print("Let's use", torch.cuda.device_count(), "GPUs!")
-        model = nn.DataParallel(net.Net(params)).cuda()
+        model = nn.DataParallel(net_fn(params)).cuda()
     else:
-        model = net.Net(params)
+        model = net_fn(params)
     
     # model = net.Net(params).cuda() if params.cuda else net.Net(params) 
     optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
