@@ -1,0 +1,69 @@
+2019-08-08 15:51:48,367 Host config Namespace(batch_size=50, ce_weight=[], checkpoint_dir='checkpoints', continue_train=False, dataroot='../data/npz', dataroot_val='data/npy', dataset_size=2800, dataset_size_val=456, display_val_acc=True, dropout=0.5, embedding_dim=128, epoch_count=1, feature_dim=31, gpu_ids='0', gru_hidden_dim=32, gru_out_dim=8, init_type='normal', isTrain=True, labelfile='../sourcefiles/labels.txt', lr=0.0002, mode='train', name='exp', num_classes=2, num_epochs=100, num_workers=4, pretrained_model_path='', print_freq=50, save_dir='checkpoints/exp', save_epoch_freq=10, sourcefile='../sourcefiles/train.txt', sourcefile_val='../sourcefiles/val.txt', tensorboard=True, time_len=24, time_step=5, use_gpu=True, use_gru=False, which_epoch='latest', which_model='base')
+2019-08-08 15:52:12,412 Host config Namespace(batch_size=50, ce_weight=[], checkpoint_dir='checkpoints', continue_train=False, dataroot='../data/npz', dataroot_val='data/npy', dataset_size=2800, dataset_size_val=456, display_val_acc=True, dropout=0.5, embedding_dim=128, epoch_count=1, feature_dim=31, gpu_ids='0', gru_hidden_dim=32, gru_out_dim=8, init_type='normal', isTrain=True, labelfile='../sourcefiles/labels.txt', lr=0.0002, mode='train', name='exp', num_classes=2, num_epochs=100, num_workers=4, pretrained_model_path='', print_freq=50, save_dir='checkpoints/exp', save_epoch_freq=10, sourcefile='../sourcefiles/train.txt', sourcefile_val='../sourcefiles/val.txt', tensorboard=True, time_len=24, time_step=5, use_gpu=True, use_gru=False, which_epoch='latest', which_model='base')
+2019-08-08 15:59:16,849 Host config Namespace(batch_size=50, ce_weight=[], checkpoint_dir='checkpoints', continue_train=False, dataroot='../data/npz', dataroot_val='data/npy', dataset_size=2800, dataset_size_val=456, display_val_acc=True, dropout=0.5, embedding_dim=128, epoch_count=1, feature_dim=31, gpu_ids='0', gru_hidden_dim=32, gru_out_dim=8, init_type='normal', isTrain=True, labelfile='../sourcefiles/labels.txt', lr=0.0002, mode='train', name='exp', num_classes=2, num_epochs=100, num_workers=4, pretrained_model_path='', print_freq=50, save_dir='checkpoints/exp', save_epoch_freq=10, sourcefile='../sourcefiles/train.txt', sourcefile_val='../sourcefiles/val.txt', tensorboard=True, time_len=24, time_step=5, use_gpu=True, use_gru=False, which_epoch='latest', which_model='base')
+2019-08-08 16:01:33,386 Host config Namespace(batch_size=50, ce_weight=[], checkpoint_dir='checkpoints', continue_train=False, dataroot='../data/npz', dataroot_val='data/npy', dataset_size=2800, dataset_size_val=456, display_val_acc=True, dropout=0.5, embedding_dim=128, epoch_count=1, feature_dim=31, gpu_ids='0', gru_hidden_dim=32, gru_out_dim=8, init_type='normal', isTrain=True, labelfile='../sourcefiles/labels.txt', lr=0.0002, mode='train', name='exp', num_classes=2, num_epochs=100, num_workers=4, pretrained_model_path='', print_freq=1, save_dir='checkpoints/exp', save_epoch_freq=10, sourcefile='../sourcefiles/train.txt', sourcefile_val='../sourcefiles/val.txt', tensorboard=True, time_len=24, time_step=5, use_gpu=True, use_gru=False, which_epoch='latest', which_model='base')
+2019-08-08 16:02:03,867 Host [train] epoch 01, iter 000001, loss 0.6857
+2019-08-08 16:03:56,611 Host config Namespace(batch_size=50, ce_weight=[], checkpoint_dir='checkpoints', continue_train=False, dataroot='../data/npz', dataroot_val='data/npy', dataset_size=2800, dataset_size_val=456, display_val_acc=True, dropout=0.5, embedding_dim=128, epoch_count=1, feature_dim=31, gpu_ids='0', gru_hidden_dim=32, gru_out_dim=8, init_type='normal', isTrain=True, labelfile='../sourcefiles/labels.txt', lr=0.0002, mode='train', name='exp', num_classes=2, num_epochs=100, num_workers=4, pretrained_model_path='', print_freq=1, save_dir='checkpoints/exp', save_epoch_freq=10, sourcefile='../sourcefiles/train.txt', sourcefile_val='../sourcefiles/val.txt', tensorboard=True, time_len=24, time_step=5, use_gpu=True, use_gru=False, which_epoch='latest', which_model='base')
+2019-08-08 16:04:16,089 Host [train] epoch 01, iter 000001, loss 0.6960
+2019-08-08 16:04:17,229 Host [train] epoch 01, iter 000002, loss 0.7000
+2019-08-08 16:04:17,409 Host [train] epoch 01, iter 000003, loss 0.6971
+2019-08-08 16:04:18,574 Host [train] epoch 01, iter 000004, loss 0.7051
+2019-08-08 16:04:37,327 Host [train] epoch 01, iter 000005, loss 0.7030
+2019-08-08 16:04:42,769 Host [train] epoch 01, iter 000006, loss 0.6990
+2019-08-08 16:04:42,773 Host [train] epoch 01, iter 000007, loss 0.6838
+2019-08-08 16:04:42,777 Host [train] epoch 01, iter 000008, loss 0.6846
+2019-08-08 16:05:03,109 Host [train] epoch 01, iter 000009, loss 0.7058
+2019-08-08 16:05:10,614 Host [train] epoch 01, iter 000010, loss 0.6931
+2019-08-08 16:05:10,618 Host [train] epoch 01, iter 000011, loss 0.6784
+2019-08-08 16:05:10,622 Host [train] epoch 01, iter 000012, loss 0.6871
+2019-08-08 16:05:29,887 Host [train] epoch 01, iter 000013, loss 0.7057
+2019-08-08 16:05:34,462 Host [train] epoch 01, iter 000014, loss 0.6950
+2019-08-08 16:05:34,467 Host [train] epoch 01, iter 000015, loss 0.6894
+2019-08-08 16:05:34,472 Host [train] epoch 01, iter 000016, loss 0.6870
+2019-08-08 16:06:05,200 Host [train] epoch 01, iter 000017, loss 0.6807
+2019-08-08 16:06:14,575 Host [train] epoch 01, iter 000018, loss 0.6984
+2019-08-08 16:06:14,581 Host [train] epoch 01, iter 000019, loss 0.6880
+2019-08-08 16:06:14,586 Host [train] epoch 01, iter 000020, loss 0.7009
+2019-08-08 16:06:33,019 Host [train] epoch 01, iter 000021, loss 0.6924
+2019-08-08 16:06:40,380 Host [train] epoch 01, iter 000022, loss 0.6934
+2019-08-08 16:06:40,385 Host [train] epoch 01, iter 000023, loss 0.6941
+2019-08-08 16:06:40,389 Host [train] epoch 01, iter 000024, loss 0.6818
+2019-08-08 16:07:11,927 Host config Namespace(batch_size=50, ce_weight=[], checkpoint_dir='checkpoints', continue_train=False, dataroot='../data/npz', dataroot_val='data/npy', dataset_size=2800, dataset_size_val=456, display_val_acc=True, dropout=0.5, embedding_dim=128, epoch_count=1, feature_dim=31, gpu_ids='0', gru_hidden_dim=32, gru_out_dim=8, init_type='normal', isTrain=True, labelfile='../sourcefiles/labels.txt', lr=0.0002, mode='train', name='exp', num_classes=2, num_epochs=100, num_workers=4, pretrained_model_path='', print_freq=1, save_dir='checkpoints/exp', save_epoch_freq=10, sourcefile='../sourcefiles/train.txt', sourcefile_val='../sourcefiles/val.txt', tensorboard=True, time_len=24, time_step=5, use_gpu=True, use_gru=False, which_epoch='latest', which_model='base')
+2019-08-08 16:07:23,157 Host [train] epoch 01, iter 0001/56, loss 0.7029
+2019-08-08 16:07:25,445 Host [train] epoch 01, iter 0002/56, loss 0.6962
+2019-08-08 16:07:25,450 Host [train] epoch 01, iter 0003/56, loss 0.6979
+2019-08-08 16:07:25,454 Host [train] epoch 01, iter 0004/56, loss 0.6945
+2019-08-08 16:07:38,927 Host [train] epoch 01, iter 0005/56, loss 0.7028
+2019-08-08 16:07:44,128 Host [train] epoch 01, iter 0006/56, loss 0.6984
+2019-08-08 16:07:44,133 Host [train] epoch 01, iter 0007/56, loss 0.6994
+2019-08-08 16:07:45,130 Host [train] epoch 01, iter 0008/56, loss 0.6832
+2019-08-08 16:07:50,267 Host config Namespace(batch_size=100, ce_weight=[], checkpoint_dir='checkpoints', continue_train=False, dataroot='../data/npz', dataroot_val='data/npy', dataset_size=2800, dataset_size_val=456, display_val_acc=True, dropout=0.5, embedding_dim=128, epoch_count=1, feature_dim=31, gpu_ids='0', gru_hidden_dim=32, gru_out_dim=8, init_type='normal', isTrain=True, labelfile='../sourcefiles/labels.txt', lr=0.0002, mode='train', name='exp', num_classes=2, num_epochs=200, num_workers=4, pretrained_model_path='', print_freq=1, save_dir='checkpoints/exp', save_epoch_freq=10, sourcefile='../sourcefiles/train.txt', sourcefile_val='../sourcefiles/val.txt', tensorboard=True, time_len=24, time_step=5, use_gpu=True, use_gru=False, which_epoch='latest', which_model='base')
+2019-08-08 16:08:15,523 Host [train] epoch 01, iter 001/28, loss 0.6946
+2019-08-08 16:08:15,526 Host [train] epoch 01, iter 002/28, loss 0.6940
+2019-08-08 16:08:15,529 Host [train] epoch 01, iter 003/28, loss 0.6956
+2019-08-08 16:08:15,531 Host [train] epoch 01, iter 004/28, loss 0.7012
+2019-08-08 16:08:41,937 Host [train] epoch 01, iter 005/28, loss 0.6874
+2019-08-08 16:08:41,940 Host [train] epoch 01, iter 006/28, loss 0.6935
+2019-08-08 16:08:42,683 Host [train] epoch 01, iter 007/28, loss 0.6833
+2019-08-08 16:08:43,318 Host [train] epoch 01, iter 008/28, loss 0.6995
+2019-08-08 16:09:07,454 Host [train] epoch 01, iter 009/28, loss 0.6963
+2019-08-08 16:09:12,359 Host [train] epoch 01, iter 010/28, loss 0.6907
+2019-08-08 16:09:12,364 Host [train] epoch 01, iter 011/28, loss 0.6878
+2019-08-08 16:09:14,123 Host [train] epoch 01, iter 012/28, loss 0.6968
+2019-08-08 16:09:46,426 Host [train] epoch 01, iter 013/28, loss 0.6934
+2019-08-08 16:09:48,916 Host [train] epoch 01, iter 014/28, loss 0.6942
+2019-08-08 16:09:48,919 Host [train] epoch 01, iter 015/28, loss 0.6962
+2019-08-08 16:09:53,003 Host [train] epoch 01, iter 016/28, loss 0.6937
+2019-08-08 16:10:30,543 Host [train] epoch 01, iter 017/28, loss 0.6950
+2019-08-08 16:10:38,335 Host [train] epoch 01, iter 018/28, loss 0.6959
+2019-08-08 16:10:38,338 Host [train] epoch 01, iter 019/28, loss 0.6884
+2019-08-08 16:10:41,303 Host [train] epoch 01, iter 020/28, loss 0.6925
+2019-08-08 16:11:17,234 Host [train] epoch 01, iter 021/28, loss 0.6997
+2019-08-08 16:11:29,192 Host [train] epoch 01, iter 022/28, loss 0.6903
+2019-08-08 16:11:29,194 Host [train] epoch 01, iter 023/28, loss 0.6915
+2019-08-08 16:11:29,197 Host [train] epoch 01, iter 024/28, loss 0.6956
+2019-08-08 16:12:19,014 Host [train] epoch 01, iter 025/28, loss 0.6956
+2019-08-08 16:12:26,559 Host [train] epoch 01, iter 026/28, loss 0.6800
+2019-08-08 16:12:26,563 Host [train] epoch 01, iter 027/28, loss 0.7060
+2019-08-08 16:12:26,568 Host [train] epoch 01, iter 028/28, loss 0.6927
+2019-08-08 16:12:26,595 Host [train] epoch 01, acc 50.86%%

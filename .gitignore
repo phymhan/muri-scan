@@ -1,5 +1,7 @@
+.idea
 __pycache__
 */*.pkl
+data
 code/data_debug
 code/experiments
 code/runs
