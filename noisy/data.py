@@ -39,6 +39,10 @@ class VideoDataset(Dataset):
         self.time_len = time_len
         self.time_step = time_step
 
+        with open(labelfile, 'r') as f:
+            labels = f.readlines()
+        self.labels = {l.split()[0]: int(l.split()[1]) for l in labels}
+
         with open(sourcefile, 'r') as f:
             self.filelist = [l.rstrip('\n') for l in f.readlines()]
 
@@ -65,10 +69,6 @@ class VideoDataset(Dataset):
         self.mapping = mapping
         self.clip_num = clip_num
         self.min_clip_num = min(clip_num)
-
-        with open(labelfile, 'r') as f:
-            labels = f.readlines()
-        self.labels = {l.split()[0]: int(l.split()[1]) for l in labels}
 
     def __len__(self):
         return len(self.videolist)
