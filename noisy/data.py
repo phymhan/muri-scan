@@ -53,9 +53,14 @@ class VideoDataset(Dataset):
             else:
                 mapping.append(player)
                 videolist.append([int(time_start)])
-        for cliplist in videolist:
+        cnt = [0, 0]
+        for i, cliplist in enumerate(videolist):
             cliplist.sort()
             clip_num.append(len(cliplist))
+            player = mapping[i]
+            label = self.labels[player.replace('_R3', '')]
+            cnt[label] += 1
+        print(f'--> 0: {cnt[0]}, 1: {cnt[1]}')
         self.videolist = videolist
         self.mapping = mapping
         self.clip_num = clip_num
