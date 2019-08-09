@@ -8,9 +8,10 @@ from scipy import stats
 import scipy.io as sio
 import torch
 from torch import optim
-from torch.utils.data import DataLoader, Dataset
-from models import BaseModel
+from models import BaseClipModel, BaseVideoModel
 from utils import init_net, make_dir, str2bool, set_logger
+from data import ClipDataset, VideoDataset
+from torch.utils.data import DataLoader
 from tensorboard_logger import configure, log_value
 
 
@@ -19,7 +20,7 @@ from tensorboard_logger import configure, log_value
 ###############################################################################
 class Options():
     def initialize(self, parser):
-        parser.add_argument('--mode', type=str, default='train', help='train | test | visualize')
+        parser.add_argument('--mode', type=str, default='train', help='train | test')
         parser.add_argument('--name', type=str, default='exp', help='experiment name')
         parser.add_argument('--dataroot', default='../data/npz', help='path to images')
         parser.add_argument('--sourcefile', type=str, default='../sourcefiles/train.txt', help='text file listing images')
@@ -51,6 +52,7 @@ class Options():
         parser.add_argument('--gru_hidden_dim', type=int, default=32)
         parser.add_argument('--gru_out_dim', type=int, default=8)
         parser.add_argument('--ce_weight', nargs='+', type=float, default=[], help='weights for CE')
+        parser.add_argument('--setting', type=str, default='clip', help='clip or video')
         return parser
 
     def get_options(self):
@@ -90,33 +92,7 @@ class Options():
 ###############################################################################
 # Dataset and Dataloader
 ###############################################################################
-class ClipDataset(Dataset):
-    def __init__(self, dataroot, sourcefile, labelfile, time_len=24, time_step=5):
-        self.dataroot = dataroot
-        self.time_len = time_len
-        self.time_step = time_step
-
-        with open(sourcefile, 'r') as f:
-            self.filelist = [l.rstrip('\n') for l in f.readlines()]
-
-        with open(labelfile, 'r') as f:
-            labels = f.readlines()
-        self.labels = {l.split()[0]: int(l.split()[1]) for l in labels}
-
-    def __len__(self):
-        return len(self.filelist)
-
-    def __getitem__(self, idx):
-        player, time_start = self.filelist[idx].split()
-        label = self.labels[player.replace('_R3', '')]
-        filename = os.path.join(self.dataroot, f'{player}-{time_start}.npz')
-        data = np.load(filename)
-        chunk_size = data['landmarks'].shape[0]
-        start_idx = np.random.randint(0, chunk_size - self.time_len * self.time_step)
-        global_feat = np.array(
-            data['features'][start_idx:start_idx + self.time_len * self.time_step:self.time_step, ...], dtype='float32')
-
-        return global_feat, label
+# import from data
 
 
 ###############################################################################
@@ -129,6 +105,9 @@ class ClipDataset(Dataset):
 # Helper Functions | Utilities
 ###############################################################################
 def get_prediction(score):
+    """
+    Majority voting
+    """
     batch_size = score.size(0)
     score_cpu = score.detach().cpu().numpy()
     pred = stats.mode(score_cpu.argmax(axis=1).reshape(batch_size, -1), axis=1)
@@ -138,14 +117,39 @@ def get_prediction(score):
 ###############################################################################
 # Main Routines
 ###############################################################################
+def get_dataset(opt, mode='train'):
+    if opt.setting == 'clip':
+        if mode == 'train':
+            dataset = ClipDataset(opt.dataroot, opt.sourcefile, opt.labelfile, opt.time_len, opt.time_step)
+        else:
+            dataset = ClipDataset(opt.dataroot_val, opt.sourcefile_val, opt.labelfile, opt.time_len, opt.time_step)
+    elif opt.setting == 'video':
+        if mode == 'train':
+            dataset = VideoDataset(opt.dataroot, opt.sourcefile, opt.labelfile, opt.time_len, opt.time_step)
+        else:
+            dataset = VideoDataset(opt.dataroot_val, opt.sourcefile_val, opt.labelfile, opt.time_len, opt.time_step)
+    else:
+        raise NotImplementedError('Setting [%s] is not implemented.' % opt.setting)
+    return dataset
+
+
 def get_model(opt):
     # define model
     net = None
-    if opt.which_model == 'base':
-        net = BaseModel(num_classes=opt.num_classes, use_gru=opt.use_gru, feature_dim=opt.feature_dim, embedding_dim=opt.embedding_dim,
-                 gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout)
+    if opt.setting == 'clip':
+        if opt.which_model == 'base':
+            net = BaseClipModel(num_classes=opt.num_classes, use_gru=opt.use_gru, feature_dim=opt.feature_dim, embedding_dim=opt.embedding_dim,
+                                gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout)
+        else:
+            raise NotImplementedError('Model [%s] is not implemented.' % opt.which_model)
+    elif opt.setting == 'video':
+        if opt.which_model == 'base':
+            net = BaseVideoModel(num_classes=opt.num_classes, use_gru=opt.use_gru, feature_dim=opt.feature_dim, embedding_dim=opt.embedding_dim,
+                                gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout)
+        else:
+            raise NotImplementedError('Model [%s] is not implemented.' % opt.which_model)
     else:
-        raise NotImplementedError('Model [%s] is not implemented.' % opt.which_model)
+        raise NotImplementedError('Setting [%s] is not implemented.' % opt.setting)
     
     # initialize | load weights
     if opt.mode == 'train' and not opt.continue_train:
@@ -181,7 +185,6 @@ def train(opt, net, dataloader):
     total_iter = 0
     num_iter_per_epoch = math.ceil(dataset_size / opt.batch_size)
     opt.display_val_acc = not not dataloader_val
-
 
     if opt.tensorboard:
         configure(opt.save_dir)
@@ -261,12 +264,12 @@ if __name__=='__main__':
 
     if opt.mode == 'train':
         # get dataloader
-        dataset = ClipDataset(opt.dataroot, opt.sourcefile, opt.labelfile, opt.time_len, opt.time_step)
+        dataset = get_dataset(opt, 'train')
         dataloader = DataLoader(dataset, shuffle=True, num_workers=opt.num_workers, batch_size=opt.batch_size)
         opt.dataset_size = len(dataset)
         # val dataset
         if opt.sourcefile_val:
-            dataset_val = ClipDataset(opt.dataroot_val, opt.sourcefile_val, opt.labelfile, opt.time_len, opt.time_step)
+            dataset_val = get_dataset(opt, 'val')
             dataloader_val = DataLoader(dataset_val, shuffle=True, num_workers=0, batch_size=1)
             opt.dataset_size_val = len(dataset_val)
         else:
