@@ -267,6 +267,9 @@ def train(opt, net, dataloader):
                     target_val.append(y.cpu().numpy())
             err_val = np.count_nonzero(np.concatenate(pred_val) - np.concatenate(target_val)) / dataset_size_val
             logger.info(f'[val] epoch {epoch:02d}, acc {(1 - err_val) * 100:.2f}%')
+            if opt.noisy:
+                print('--> transition matrix')
+                print(net.transition.weight.data)
             if opt.tensorboard:
                 log_value(f'val/acc', 1 - err_val, epoch)
 
