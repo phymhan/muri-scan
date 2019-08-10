@@ -22,7 +22,7 @@ class BaseClipModel(nn.Module):
     The documentation for all the various components available o you is here: http://pytorch.org/docs/master/nn.html
     """
     def __init__(self, num_classes=2, use_gru=False, feature_dim=31, embedding_dim=128,
-                 gru_hidden_dim=32, gru_out_dim=8, dropout=0.2):
+                 gru_hidden_dim=32, gru_out_dim=8, dropout=0.2, noisy=False):
         """
         Args:
             params: dict with model parameters
@@ -54,6 +54,11 @@ class BaseClipModel(nn.Module):
             self.gru2out = nn.Linear(gru_hidden_dim, gru_out_dim)
             out_dim = gru_out_dim
         self.cls = nn.Linear(out_dim, num_classes)
+        if noisy:
+            self.transition = nn.Embedding(num_classes, num_classes)  # initialized in get_model in main
+            self.noisy = True
+        else:
+            self.noisy = False
 
     def init_hidden(self, batch_size=1):
         h = torch.zeros(1, batch_size, self.glb_hidden_dim)
@@ -84,7 +89,7 @@ class BaseVideoModel(nn.Module):
     The documentation for all the various components available o you is here: http://pytorch.org/docs/master/nn.html
     """
     def __init__(self, num_classes=2, use_gru=False, feature_dim=31, embedding_dim=128,
-                 gru_hidden_dim=32, gru_out_dim=8, dropout=0.2):
+                 gru_hidden_dim=32, gru_out_dim=8, dropout=0.2, noisy=False):
         """
         Args:
             params: dict with model parameters

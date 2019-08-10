@@ -1,0 +1,38 @@
+--------------- Options -----------------
+               batch_size: 1                             	[default: 100]
+                ce_weight: []                            
+           checkpoint_dir: checkpoints                   
+           continue_train: False                         
+                 dataroot: ../data/npz                   
+                  dropout: 0.5                           
+            embedding_dim: 128                           
+              epoch_count: 1                             
+              feature_dim: 31                            
+                  gpu_ids: 0                             
+           gru_hidden_dim: 32                            
+              gru_out_dim: 8                             
+                init_type: normal                        
+                  isTrain: True                          	[default: None]
+                labelfile: ../sourcefiles/labels.txt     
+             lambda_trace: 0.001                         
+                       lr: 0.0002                        
+                     mode: train                         
+                     name: test_trace                    	[default: exp]
+                    noisy: True                          	[default: False]
+              num_classes: 3                             	[default: 2]
+               num_epochs: 200                           
+              num_workers: 4                             
+    pretrained_model_path:                               
+               print_freq: 50                            
+          save_epoch_freq: 10                            
+                  setting: clip                          
+               sourcefile: ../sourcefiles/train.txt      
+           sourcefile_val: ../sourcefiles/val.txt        
+              tensorboard: True                          
+                 time_len: 24                            
+                time_step: 5                             
+                  use_gpu: True                          	[default: None]
+                  use_gru: False                         
+              which_epoch: latest                        
+              which_model: base                          
+----------------- End -------------------

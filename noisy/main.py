@@ -14,6 +14,11 @@ from data import ClipDataset, VideoDataset
 from torch.utils.data import DataLoader
 from tensorboard_logger import configure, log_value
 
+import pdb
+
+global MAGIC_EPS
+MAGIC_EPS = 1e-32
+
 
 ###############################################################################
 # Options | Argument Parser
@@ -24,7 +29,6 @@ class Options():
         parser.add_argument('--name', type=str, default='exp', help='experiment name')
         parser.add_argument('--dataroot', default='../data/npz', help='path to images')
         parser.add_argument('--sourcefile', type=str, default='../sourcefiles/train.txt', help='text file listing images')
-        parser.add_argument('--dataroot_val', type=str, default='data/npz')
         parser.add_argument('--sourcefile_val', type=str, default='../sourcefiles/val.txt')
         parser.add_argument('--labelfile', type=str, default='../sourcefiles/labels.txt')
         parser.add_argument('--pretrained_model_path', type=str, default='', help='path to pretrained models')
@@ -53,6 +57,8 @@ class Options():
         parser.add_argument('--gru_out_dim', type=int, default=8)
         parser.add_argument('--ce_weight', nargs='+', type=float, default=[], help='weights for CE')
         parser.add_argument('--setting', type=str, default='clip', help='clip or video')
+        parser.add_argument('--noisy', type=str2bool, default=False)
+        parser.add_argument('--lambda_trace', type=float, default=0.001)
         return parser
 
     def get_options(self):
@@ -122,12 +128,12 @@ def get_dataset(opt, mode='train'):
         if mode == 'train':
             dataset = ClipDataset(opt.dataroot, opt.sourcefile, opt.labelfile, opt.time_len, opt.time_step)
         else:
-            dataset = ClipDataset(opt.dataroot_val, opt.sourcefile_val, opt.labelfile, opt.time_len, opt.time_step)
+            dataset = ClipDataset(opt.dataroot, opt.sourcefile_val, opt.labelfile, opt.time_len, opt.time_step)
     elif opt.setting == 'video':
         if mode == 'train':
             dataset = VideoDataset(opt.dataroot, opt.sourcefile, opt.labelfile, opt.time_len, opt.time_step)
         else:
-            dataset = VideoDataset(opt.dataroot_val, opt.sourcefile_val, opt.labelfile, opt.time_len, opt.time_step)
+            dataset = VideoDataset(opt.dataroot, opt.sourcefile_val, opt.labelfile, opt.time_len, opt.time_step)
     else:
         raise NotImplementedError('Setting [%s] is not implemented.' % opt.setting)
     return dataset
@@ -139,13 +145,13 @@ def get_model(opt):
     if opt.setting == 'clip':
         if opt.which_model == 'base':
             net = BaseClipModel(num_classes=opt.num_classes, use_gru=opt.use_gru, feature_dim=opt.feature_dim, embedding_dim=opt.embedding_dim,
-                                gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout)
+                                gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout, noisy=opt.noisy)
         else:
             raise NotImplementedError('Model [%s] is not implemented.' % opt.which_model)
     elif opt.setting == 'video':
         if opt.which_model == 'base':
             net = BaseVideoModel(num_classes=opt.num_classes, use_gru=opt.use_gru, feature_dim=opt.feature_dim, embedding_dim=opt.embedding_dim,
-                                gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout)
+                                 gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout, noisy=opt.noisy)
         else:
             raise NotImplementedError('Model [%s] is not implemented.' % opt.which_model)
     else:
@@ -154,6 +160,9 @@ def get_model(opt):
     # initialize | load weights
     if opt.mode == 'train' and not opt.continue_train:
         init_net(net, init_type=opt.init_type)
+        if opt.noisy:
+            # init transition matrix as identity
+            net.transition.weight.data.copy_(torch.eye(opt.num_classes))
         if opt.pretrained_model_path:
             if isinstance(net, torch.nn.DataParallel):
                 net.module.load_pretrained(opt.pretrained_model_path)
@@ -207,7 +216,15 @@ def train(opt, net, dataloader):
             total_iter += 1
             optimizer.zero_grad()
             y_pred = net(x)
-            loss = criterion(y_pred, y)
+            if opt.noisy:
+                # y_pred = net.transition(y_pred)
+                mat = net.transition.weight
+                mat = mat / (torch.sum(mat, dim=0, keepdim=True) + MAGIC_EPS)
+                y_pred = torch.mm(y_pred, mat)
+                trace = torch.trace(net.transition.weight)
+                loss = criterion(y_pred, y) + opt.lambda_trace * trace
+            else:
+                loss = criterion(y_pred, y)
             # get predictions
             pred_train.append(get_prediction(y_pred))
             target_train.append(y.cpu().numpy())
