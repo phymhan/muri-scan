@@ -2,9 +2,12 @@
 __pycache__
 */*.pkl
 data
+../data
 code/data_debug
 code/experiments
 code/runs
 log
 noisy/experiments
 noisy/checkpionts
+experiments
+checkpoints
