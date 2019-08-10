@@ -13,6 +13,7 @@ from utils import init_net, make_dir, str2bool, set_logger
 from data import ClipDataset, VideoDataset
 from torch.utils.data import DataLoader
 from tensorboard_logger import configure, log_value
+import torch.nn.functional as F
 
 import pdb
 
@@ -183,9 +184,11 @@ def get_model(opt):
 def train(opt, net, dataloader):
     if len(opt.ce_weight):
         ce_weight = torch.Tensor(opt.ce_weight).cuda() if opt.use_gpu else torch.Tensor(opt.ce_weight)
-        criterion = torch.nn.CrossEntropyLoss(weight=ce_weight)
+        # criterion = torch.nn.CrossEntropyLoss(weight=ce_weight)
+        criterion = torch.nn.NLLLoss(weight=ce_weight)
     else:
-        criterion = torch.nn.CrossEntropyLoss()
+        # criterion = torch.nn.CrossEntropyLoss()
+        criterion = torch.nn.NLLLoss()
     opt.save_dir = os.path.join(opt.checkpoint_dir, opt.name)
     make_dir(opt.save_dir)
     optimizer = optim.Adam(net.parameters(), lr=opt.lr)
@@ -216,14 +219,17 @@ def train(opt, net, dataloader):
             total_iter += 1
             optimizer.zero_grad()
             y_pred = net(x)
+            y_pred = F.softmax(y_pred)
             if opt.noisy:
-                mat = net.transition.weight
+                mat = F.relu(net.transition.weight)
                 mat = mat / (torch.sum(mat, dim=0, keepdim=True) + MAGIC_EPS)
                 y_pred = torch.mm(y_pred, mat)
+                logsoftmax = torch.log(y_pred + MAGIC_EPS)
                 trace = torch.trace(net.transition.weight)
-                loss = criterion(y_pred, y) + opt.lambda_trace * trace
+                loss = criterion(logsoftmax, y) + opt.lambda_trace * trace
             else:
-                loss = criterion(y_pred, y)
+                logsoftmax = torch.log(y_pred + MAGIC_EPS)
+                loss = criterion(logsoftmax, y)
             # get predictions
             pred_train.append(get_prediction(y_pred))
             target_train.append(y.cpu().numpy())
@@ -252,8 +258,9 @@ def train(opt, net, dataloader):
                     if opt.use_gpu:
                         x, y = x.cuda(), y.cuda()
                     y_pred = net(x)
+                    y_pred = F.softmax(y_pred)
                     if opt.noisy:
-                        mat = net.transition.weight
+                        mat = F.relu(net.transition.weight)
                         mat = mat / (torch.sum(mat, dim=0, keepdim=True) + MAGIC_EPS)
                         y_pred = torch.mm(y_pred, mat)
                     pred_val.append(get_prediction(y_pred))
