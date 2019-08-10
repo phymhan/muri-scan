@@ -217,7 +217,6 @@ def train(opt, net, dataloader):
             optimizer.zero_grad()
             y_pred = net(x)
             if opt.noisy:
-                # y_pred = net.transition(y_pred)
                 mat = net.transition.weight
                 mat = mat / (torch.sum(mat, dim=0, keepdim=True) + MAGIC_EPS)
                 y_pred = torch.mm(y_pred, mat)
@@ -245,15 +244,20 @@ def train(opt, net, dataloader):
 
         # evaluate val
         if opt.display_val_acc:
-            pred_val = []
-            target_val = []
-            for i, data in enumerate(dataloader_val, 0):
-                x, y = data
-                if opt.use_gpu:
-                    x, y = x.cuda(), y.cuda()
-                y_pred = net(x)
-                pred_val.append(get_prediction(y_pred))
-                target_val.append(y.cpu().numpy())
+            with torch.no_grad():
+                pred_val = []
+                target_val = []
+                for i, data in enumerate(dataloader_val, 0):
+                    x, y = data
+                    if opt.use_gpu:
+                        x, y = x.cuda(), y.cuda()
+                    y_pred = net(x)
+                    if opt.noisy:
+                        mat = net.transition.weight
+                        mat = mat / (torch.sum(mat, dim=0, keepdim=True) + MAGIC_EPS)
+                        y_pred = torch.mm(y_pred, mat)
+                    pred_val.append(get_prediction(y_pred))
+                    target_val.append(y.cpu().numpy())
             err_val = np.count_nonzero(np.concatenate(pred_val) - np.concatenate(target_val)) / dataset_size_val
             logger.info(f'[val] epoch {epoch:02d}, acc {(1 - err_val) * 100:.2f}%')
             if opt.tensorboard:
