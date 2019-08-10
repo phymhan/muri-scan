@@ -269,7 +269,7 @@ def train(opt, net, dataloader):
             logger.info(f'[val] epoch {epoch:02d}, acc {(1 - err_val) * 100:.2f}%')
             if opt.noisy:
                 print('--> transition matrix')
-                print(net.transition.weight.data)
+                print(mat)
             if opt.tensorboard:
                 log_value(f'val/acc', 1 - err_val, epoch)
 
