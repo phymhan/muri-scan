@@ -121,6 +121,13 @@ def get_prediction(score):
     return pred[0].reshape(batch_size)
 
 
+def normalize_transition(m):
+    # m = F.relu(m)
+    # m = m / (torch.sum(m, dim=1, keepdim=True) + MAGIC_EPS)
+    # return m
+    return F.softmax(m)
+
+
 ###############################################################################
 # Main Routines
 ###############################################################################
@@ -163,7 +170,8 @@ def get_model(opt):
         init_net(net, init_type=opt.init_type)
         if opt.noisy:
             # init transition matrix as identity
-            net.transition.weight.data.copy_(torch.eye(opt.num_classes))
+            # net.transition.weight.data.copy_(torch.eye(opt.num_classes))
+            net.transition.weight.data.copy_(torch.tensor([[1, 0, 0], [0, 1, 0], [0.5, 0.5, 0]])*5.)
         if opt.pretrained_model_path:
             if isinstance(net, torch.nn.DataParallel):
                 net.module.load_pretrained(opt.pretrained_model_path)
@@ -221,8 +229,7 @@ def train(opt, net, dataloader):
             y_pred = net(x)
             y_pred = F.softmax(y_pred)
             if opt.noisy:
-                mat = F.relu(net.transition.weight)
-                mat = mat / (torch.sum(mat, dim=0, keepdim=True) + MAGIC_EPS)
+                mat = normalize_transition(net.transition.weight)
                 y_pred = torch.mm(y_pred, mat)
                 logsoftmax = torch.log(y_pred + MAGIC_EPS)
                 trace = torch.trace(net.transition.weight)
@@ -260,8 +267,7 @@ def train(opt, net, dataloader):
                     y_pred = net(x)
                     y_pred = F.softmax(y_pred)
                     if opt.noisy:
-                        mat = F.relu(net.transition.weight)
-                        mat = mat / (torch.sum(mat, dim=0, keepdim=True) + MAGIC_EPS)
+                        mat = normalize_transition(net.transition.weight)
                         y_pred = torch.mm(y_pred, mat)
                     pred_val.append(get_prediction(y_pred))
                     target_val.append(y.cpu().numpy())
