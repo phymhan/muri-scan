@@ -8,9 +8,9 @@ from scipy import stats
 import scipy.io as sio
 import torch
 from torch import optim
-from models import BaseClipModel, BaseVideoModel
+from models import BaseClipModel, BaseVideoModel, BaseVideoModelV2
 from utils import init_net, make_dir, str2bool, set_logger
-from data import ClipDataset, VideoDataset
+from data import ClipDataset, VideoDataset, VideoDatasetV2
 from torch.utils.data import DataLoader
 from tensorboard_logger import configure, log_value
 import torch.nn.functional as F
@@ -49,8 +49,9 @@ class Options():
         parser.add_argument('--continue_train', type=str2bool, default=False)
         parser.add_argument('--epoch_count', type=int, default=1, help='starting epoch')
         parser.add_argument('--tensorboard', type=str2bool, default=True)
-        parser.add_argument('--time_len', type=int, default=24)
-        parser.add_argument('--time_step', type=int, default=5)
+        parser.add_argument('--clip_num', type=int, default=5)
+        parser.add_argument('--time_len', type=int, default=60)
+        parser.add_argument('--time_step', type=int, default=1)
         parser.add_argument('--use_gru', type=str2bool, default=False)
         parser.add_argument('--feature_dim', type=int, default=31)
         parser.add_argument('--embedding_dim', type=int, default=128)
@@ -142,6 +143,11 @@ def get_dataset(opt, mode='train'):
             dataset = VideoDataset(opt.dataroot, opt.sourcefile, opt.labelfile, opt.time_len, opt.time_step)
         else:
             dataset = VideoDataset(opt.dataroot, opt.sourcefile_val, opt.labelfile, opt.time_len, opt.time_step)
+    elif opt.setting == 'videov2':
+        if mode == 'train':
+            dataset = VideoDatasetV2(opt.dataroot, opt.sourcefile, opt.clip_num, opt.time_len, opt.time_step)
+        else:
+            dataset = VideoDatasetV2(opt.dataroot, opt.sourcefile_val, opt.clip_num, opt.time_len, opt.time_step)
     else:
         raise NotImplementedError('Setting [%s] is not implemented.' % opt.setting)
     return dataset
@@ -160,6 +166,12 @@ def get_model(opt):
         if opt.which_model == 'base':
             net = BaseVideoModel(num_classes=opt.num_classes, use_gru=opt.use_gru, feature_dim=opt.feature_dim, embedding_dim=opt.embedding_dim,
                                  gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout, noisy=opt.noisy)
+        else:
+            raise NotImplementedError('Model [%s] is not implemented.' % opt.which_model)
+    elif opt.setting == 'videov2':
+        if opt.which_model == 'base':
+            net = BaseVideoModelV2(num_classes=opt.num_classes, use_gru=opt.use_gru, feature_dim=opt.feature_dim, embedding_dim=opt.embedding_dim,
+                                   gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout, noisy=opt.noisy)
         else:
             raise NotImplementedError('Model [%s] is not implemented.' % opt.which_model)
     else:

@@ -88,3 +88,32 @@ class VideoDataset(Dataset):
                 data['features'][start_idx:start_idx + self.time_len * self.time_step:self.time_step, ...],
                 dtype='float32'))
         return np.stack(global_feat), label
+
+
+class VideoDatasetV2(Dataset):
+    def __init__(self, dataroot, sourcefile, clip_num=5, time_len=60, time_step=1):
+        self.dataroot = dataroot
+        self.clip_num = clip_num
+        self.time_len = time_len
+        self.time_step = time_step
+
+        with open(sourcefile, 'r') as f:
+            self.filelist = [l.rstrip('\n') for l in f.readlines()]
+
+    def __len__(self):
+        return len(self.filelist)
+
+    def __getitem__(self, index):
+        # sample min_clip_num clips and return feature of size (clip_num, time_len, global_feature_dim)
+        player = self.filelist[index].split()[0]
+        label = int(self.filelist[index].split()[1])
+        feat = np.load(os.path.join(self.dataroot, f'{player}.npz'))['features']
+        frame_num = feat.shape[0]
+        frame_num_per_clip = int(np.ceil(frame_num / self.clip_num))
+        feat_list = []
+        for i in range(self.clip_num):
+            chunk_size = min(frame_num, (i+1)*frame_num_per_clip) - i*frame_num_per_clip
+            start_idx = np.random.randint(0, chunk_size - self.time_len * self.time_step) + i*frame_num_per_clip
+            feat_list.append(np.array(
+                feat[start_idx:start_idx + self.time_len * self.time_step:self.time_step, ...], dtype='float32'))
+        return np.stack(feat_list), label
