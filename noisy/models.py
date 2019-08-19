@@ -135,7 +135,7 @@ class BaseVideoModel(nn.Module):
         time_len *= clip_num
         x = self.input_map(x)
         x = x.view(batch_size, time_len, -1)  # batch_size x time_len x global_embedding_dim)
-        if self.use_gru == 0:
+        if not self.use_gru:
             out = torch.mean(x, 1)
         else:
             hidden = self.init_hidden(batch_size)
