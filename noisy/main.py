@@ -8,7 +8,7 @@ from scipy import stats
 import scipy.io as sio
 import torch
 from torch import optim
-from models import BaseClipModel, BaseVideoModel, BaseVideoModelV2
+from models import BaseClipModel, BaseVideoModel, BaseVideoModelV2, WeaklyVideoModel
 from utils import init_net, make_dir, str2bool, set_logger
 from data import ClipDataset, VideoDataset, VideoDatasetV2
 from torch.utils.data import DataLoader
@@ -143,7 +143,7 @@ def get_dataset(opt, mode='train'):
             dataset = VideoDataset(opt.dataroot, opt.sourcefile, opt.labelfile, opt.time_len, opt.time_step)
         else:
             dataset = VideoDataset(opt.dataroot, opt.sourcefile_val, opt.labelfile, opt.time_len, opt.time_step)
-    elif opt.setting == 'videov2':
+    elif opt.setting == 'videov2' or opt.setting == 'weakly':
         if mode == 'train':
             dataset = VideoDatasetV2(opt.dataroot, opt.sourcefile, opt.clip_num, opt.time_len, opt.time_step)
         else:
@@ -171,6 +171,12 @@ def get_model(opt):
     elif opt.setting == 'videov2':
         if opt.which_model == 'base':
             net = BaseVideoModelV2(num_classes=opt.num_classes, use_gru=opt.use_gru, feature_dim=opt.feature_dim, embedding_dim=opt.embedding_dim,
+                                   gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout, noisy=opt.noisy)
+        else:
+            raise NotImplementedError('Model [%s] is not implemented.' % opt.which_model)
+    elif opt.setting == 'weakly':
+        if opt.which_model == 'base':
+            net = WeaklyVideoModel(num_classes=opt.num_classes, use_gru=opt.use_gru, feature_dim=opt.feature_dim, embedding_dim=opt.embedding_dim,
                                    gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout, noisy=opt.noisy)
         else:
             raise NotImplementedError('Model [%s] is not implemented.' % opt.which_model)
