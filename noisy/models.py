@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import pdb
 
 
 class LayerNorm(nn.Module):
@@ -81,7 +82,10 @@ class BaseClipModel(nn.Module):
                 out, hidden = self.glb_gru(emb, hidden)
             # only use the last output
             out = self.gru2out(out.view(-1, self.gru_hidden_dim))  # batch_size x global_out_dim
-        pred = self.cls(out)
+        pred = F.softmax(self.cls(out))
+        if self.noisy:
+            T = F.softmax(self.transition.weight)
+            pred = torch.mm(pred, T)
         return pred
 
 
@@ -146,7 +150,7 @@ class BaseVideoModel(nn.Module):
             # only use the last output
             out = self.gru2out(out.view(-1, self.gru_hidden_dim))  # batch_size x global_out_dim
         pred = self.cls(out)
-        return pred
+        return F.softmax(pred)
 
 
 class BaseVideoModelV2(nn.Module):
@@ -211,7 +215,7 @@ class BaseVideoModelV2(nn.Module):
         # clip feat -> video feat
         feat = torch.mean(out, 1)
         pred = self.cls(feat)
-        return pred
+        return F.softmax(pred)
 
 
 class WeaklyVideoModel(nn.Module):
@@ -253,6 +257,11 @@ class WeaklyVideoModel(nn.Module):
         self.fc1c = nn.Linear(out_dim, num_classes)
         self.fc1d = nn.Linear(out_dim, num_classes)
         # self.cls = nn.Linear(out_dim, num_classes)
+        if noisy:
+            self.transition = nn.Embedding(num_classes, num_classes)  # initialized in get_model in main
+            self.noisy = True
+        else:
+            self.noisy = False
 
     def init_hidden(self, batch_size=1):
         h = torch.zeros(1, batch_size, self.gru_hidden_dim)
@@ -275,8 +284,13 @@ class WeaklyVideoModel(nn.Module):
             # only use the last output
             out = self.gru2out(out.view(-1, self.gru_hidden_dim))  # batch_size*clip_num x global_out_dim
             out = out.view(batch_size, clip_num, -1)
+
         # weakly
         sigma_c = F.softmax(self.fc1c(out), 2)  # batch_size x clip_num x num_classes
+        if self.noisy:
+            # pdb.set_trace()
+            T = F.softmax(self.transition.weight)
+            sigma_c = torch.mm(sigma_c.view(batch_size*clip_num, -1), T).view(batch_size, clip_num, -1)
         sigma_d = F.softmax(self.fc1d(out), 1)  # batch_size x clip_num x num_classes
         x = sigma_c * sigma_d
         pred = torch.sum(x, dim=1)
