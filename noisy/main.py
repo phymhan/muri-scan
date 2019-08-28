@@ -61,6 +61,10 @@ class Options():
         parser.add_argument('--setting', type=str, default='clip', help='clip or video')
         parser.add_argument('--noisy', type=str2bool, default=False)
         parser.add_argument('--lambda_trace', type=float, default=0.001)
+        parser.add_argument('--dim_input_map', type=int, nargs='+', default=[128])
+        parser.add_argument('--dim_fc', type=int, nargs='+', default=[])
+        parser.add_argument('--norm_input_map', type=str, default='none')
+        parser.add_argument('--norm_fc', type=str, default='none')
         return parser
 
     def get_options(self):
@@ -177,7 +181,7 @@ def get_model(opt):
     elif opt.setting == 'weakly':
         if opt.which_model == 'base':
             net = WeaklyVideoModel(num_classes=opt.num_classes, use_gru=opt.use_gru, feature_dim=opt.feature_dim, embedding_dim=opt.embedding_dim,
-                                   gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout, noisy=opt.noisy)
+                                   gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout, noisy=opt.noisy, dim_input_map=opt.dim_input_map, norm_input_map=opt.norm_input_map, dim_fc=opt.dim_fc, norm_fc=opt.norm_fc)
         else:
             raise NotImplementedError('Model [%s] is not implemented.' % opt.which_model)
     else:

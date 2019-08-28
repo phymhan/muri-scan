@@ -2,6 +2,42 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import pdb
+import functools
+
+
+class LayerNorm(nn.Module):
+    "Construct a layernorm module (See citation for details)."
+    def __init__(self, ft_dim, eps=1e-6):
+        super(LayerNorm, self).__init__()
+        self.a_2 = nn.Parameter(torch.ones(ft_dim))
+        self.b_2 = nn.Parameter(torch.zeros(ft_dim))
+        self.eps = eps
+
+    def forward(self, x):
+        # x.shape -> (batch, S*T, ft_dim)
+        mean = x.mean(-1, keepdim=True)
+        std = x.std(-1, keepdim=True)
+        return self.a_2 * (x - mean) / (std + self.eps) + self.b_2
+
+
+def get_norm_layer(norm_type='instance'):
+    if norm_type == 'batch':
+        norm_layer = functools.partial(nn.BatchNorm1d, affine=True)
+    elif norm_type == 'instance':
+        norm_layer = functools.partial(nn.InstanceNorm1d, affine=True, track_running_stats=True)
+    elif norm_type == 'none':
+        norm_layer = Identity
+    else:
+        raise NotImplementedError('norm layer [%s] not found' % norm_type)
+    return norm_layer
+
+
+class Identity(nn.Module):
+    def __init__(self, *args):
+        super(Identity, self).__init__()
+
+    def forward(self, x):
+        return x
 
 
 class LayerNorm(nn.Module):
@@ -223,40 +259,47 @@ class WeaklyVideoModel(nn.Module):
     The documentation for all the various components available o you is here: http://pytorch.org/docs/master/nn.html
     """
     def __init__(self, num_classes=2, use_gru=False, feature_dim=31, embedding_dim=128,
-                 gru_hidden_dim=32, gru_out_dim=8, dropout=0.2, noisy=False):
+                 gru_hidden_dim=32, gru_out_dim=8, dropout=0.2, noisy=False, dim_input_map=[128], norm_input_map='none', dim_fc=[], norm_fc='none'):
         """
         Args:
             params: dict with model parameters
         """
         super(WeaklyVideoModel, self).__init__()
-
+        blocks = []
+        f0 = feature_dim
+        for f1 in dim_input_map:
+            blocks += [nn.Linear(f0, f1),
+                       nn.ReLU(),
+                       LayerNorm(f1),
+                       nn.Dropout(dropout)]
+            f0 = f1
+        self.input_map = nn.Sequential(*blocks)
         if not use_gru:
             self.use_gru = False
-            self.input_map = nn.Sequential(
-                nn.Linear(feature_dim, embedding_dim),
-                nn.ReLU(),
-                LayerNorm(embedding_dim),
-                nn.Dropout(dropout),
-            )
-            out_dim = embedding_dim
+            out_dim = f1
         else:
             self.use_gru = True
             self.feat_dim = feature_dim
-            self.emb_dim = embedding_dim
+            self.emb_dim = f1
             self.gru_hidden_dim = gru_hidden_dim
             self.gru_out_dim = gru_out_dim
-            self.input_map = nn.Sequential(
-                nn.Linear(feature_dim, embedding_dim),
-                nn.ReLU(),
-                LayerNorm(embedding_dim),
-                nn.Dropout(dropout),
-            )
-            self.gru = nn.GRU(embedding_dim, gru_hidden_dim)
+            self.gru = nn.GRU(f1, gru_hidden_dim)
             self.gru2out = nn.Linear(gru_hidden_dim, gru_out_dim)
             out_dim = gru_out_dim
-        self.fc1c = nn.Linear(out_dim, num_classes)
-        self.fc1d = nn.Linear(out_dim, num_classes)
-        # self.cls = nn.Linear(out_dim, num_classes)
+        blocks = []
+        f0 = out_dim
+        f1 = out_dim
+        for f1 in dim_fc:
+            blocks += [nn.Linear(f0, f1),
+                       nn.ReLU(),
+                       nn.Dropout(dropout)]
+            f0 = f1
+        if blocks:
+            self.fc = nn.Sequential(*blocks)
+        else:
+            self.fc = None
+        self.fc1c = nn.Linear(f1, num_classes)
+        self.fc1d = nn.Linear(f1, num_classes)
         if noisy:
             self.transition = nn.Embedding(num_classes, num_classes)  # initialized in get_model in main
             self.noisy = True
@@ -284,7 +327,8 @@ class WeaklyVideoModel(nn.Module):
             # only use the last output
             out = self.gru2out(out.view(-1, self.gru_hidden_dim))  # batch_size*clip_num x global_out_dim
             out = out.view(batch_size, clip_num, -1)
-
+        if self.fc:
+            out = self.fc(out)
         # weakly
         sigma_c = F.softmax(self.fc1c(out), 2)  # batch_size x clip_num x num_classes
         if self.noisy:
