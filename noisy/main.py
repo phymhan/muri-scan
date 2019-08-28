@@ -245,16 +245,11 @@ def train(opt, net, dataloader):
             total_iter += 1
             optimizer.zero_grad()
             y_pred = net(x)
-            y_pred = F.softmax(y_pred)
+            logsoftmax = torch.log(y_pred + MAGIC_EPS)
+            loss = criterion(logsoftmax, y)
             if opt.noisy:
-                mat = normalize_transition(net.transition.weight)
-                y_pred = torch.mm(y_pred, mat)
-                logsoftmax = torch.log(y_pred + MAGIC_EPS)
                 trace = torch.trace(net.transition.weight)
-                loss = criterion(logsoftmax, y) + opt.lambda_trace * trace
-            else:
-                logsoftmax = torch.log(y_pred + MAGIC_EPS)
-                loss = criterion(logsoftmax, y)
+                loss += opt.lambda_trace * trace
             # get predictions
             pred_train.append(get_prediction(y_pred))
             target_train.append(y.cpu().numpy())
@@ -283,17 +278,13 @@ def train(opt, net, dataloader):
                     if opt.use_gpu:
                         x, y = x.cuda(), y.cuda()
                     y_pred = net(x)
-                    y_pred = F.softmax(y_pred)
-                    if opt.noisy:
-                        mat = normalize_transition(net.transition.weight)
-                        y_pred = torch.mm(y_pred, mat)
                     pred_val.append(get_prediction(y_pred))
                     target_val.append(y.cpu().numpy())
             err_val = np.count_nonzero(np.concatenate(pred_val) - np.concatenate(target_val)) / dataset_size_val
             logger.info(f'[val] epoch {epoch:02d}, acc {(1 - err_val) * 100:.2f}%')
             if opt.noisy:
                 print('--> transition matrix')
-                print(mat)
+                print(normalize_transition(net.transition.weight))
             if opt.tensorboard:
                 log_value(f'val/acc', 1 - err_val, epoch)
 
