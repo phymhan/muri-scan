@@ -41,6 +41,8 @@ class Options():
         parser.add_argument('--num_epochs', type=int, default=200, help='number of epochs')
         parser.add_argument('--batch_size', type=int, default=100, help='batch size')
         parser.add_argument('--lr', type=float, default=0.0002, help='learning rate')
+        parser.add_argument('--decay_factor', type=float, default=0.1, help='decay the learning rate by a factor of..')
+        parser.add_argument('--lr_step_size', type=float, default=20, help='epoch steps for the scheduler.')
         parser.add_argument('--which_epoch', type=str, default='latest', help='which epoch to load')
         parser.add_argument('--which_model', type=str, default='base', help='which model')
         parser.add_argument('--gpu_ids', type=str, default='0', help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
@@ -74,7 +76,7 @@ class Options():
             assert(len(self.opt.ce_weight) == self.opt.num_classes)
         self.print_options(self.opt)
         return self.opt
-    
+
     def print_options(self, opt):
         message = ''
         message += '--------------- Options -----------------\n'
@@ -182,7 +184,7 @@ def get_model(opt):
             raise NotImplementedError('Model [%s] is not implemented.' % opt.which_model)
     else:
         raise NotImplementedError('Setting [%s] is not implemented.' % opt.setting)
-    
+
     # initialize | load weights
     if opt.mode == 'train' and not opt.continue_train:
         init_net(net, init_type=opt.init_type)
@@ -197,10 +199,10 @@ def get_model(opt):
                 net.load_pretrained(opt.pretrained_model_path)
     else:
         net.load_state_dict(torch.load(os.path.join(opt.checkpoint_dir, opt.name, '{}_net.pth'.format(opt.which_epoch))))
-    
+
     if opt.mode != 'train':
         net.eval()
-    
+
     if opt.use_gpu:
         net.cuda()
     return net
@@ -217,7 +219,11 @@ def train(opt, net, dataloader):
         criterion = torch.nn.NLLLoss()
     opt.save_dir = os.path.join(opt.checkpoint_dir, opt.name)
     make_dir(opt.save_dir)
+
     optimizer = optim.Adam(net.parameters(), lr=opt.lr)
+
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=opt.lr_step_size, gamma=opt.decay_factor)
+    #scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=opt.decay_factor, patience=opt.lr_step_size, verbose=True)
 
     dataset_size, dataset_size_val = opt.dataset_size, opt.dataset_size_val
     total_iter = 0
@@ -281,6 +287,7 @@ def train(opt, net, dataloader):
                     pred_val.append(get_prediction(y_pred))
                     target_val.append(y.cpu().numpy())
             err_val = np.count_nonzero(np.concatenate(pred_val) - np.concatenate(target_val)) / dataset_size_val
+            scheduler.step(err_val)
             logger.info(f'[val] epoch {epoch:02d}, acc {(1 - err_val) * 100:.2f}%')
             if opt.noisy:
                 print('--> transition matrix')
