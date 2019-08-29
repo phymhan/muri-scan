@@ -44,7 +44,7 @@ class Options():
         parser.add_argument('--batch_size', type=int, default=16, help='batch size')
         parser.add_argument('--lr', type=float, default=0.0002, help='learning rate')
         parser.add_argument('--decay_factor', type=float, default=0.1, help='decay the learning rate by a factor of..')
-        parser.add_argument('--lr_step_size', type=float, default=20, help='epoch steps for the scheduler.')
+        parser.add_argument('--lr_step_size', type=float, default=100, help='epoch steps for the scheduler.')
         parser.add_argument('--which_epoch', type=str, default='latest', help='which epoch to load')
         parser.add_argument('--which_model', type=str, default='base', help='which model')
         parser.add_argument('--gpu_ids', type=str, default='0', help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
