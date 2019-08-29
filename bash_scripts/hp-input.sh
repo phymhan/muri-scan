@@ -6,7 +6,7 @@ NAME=input
 # videov2
 for VAR in '128' '64 128' '128 128' '128 64 128' '128 32 128' '128 64'
 do
-	echo CUDA_VISIBLE_DEVICES=${GPUID} python main.py \
+	CUDA_VISIBLE_DEVICES=${GPUID} python main.py \
     --name hp-${NAME}_video_${VAR// /_} \
     --print_freq 1 \
     --setting videov2 \
@@ -16,7 +16,7 @@ done
 # weakly
 for VAR in '128' '64 128' '128 128' '128 64 128' '128 32 128' '128 64'
 do
-	echo CUDA_VISIBLE_DEVICES=${GPUID} python main.py \
+	CUDA_VISIBLE_DEVICES=${GPUID} python main.py \
     --name hp-${NAME}_video_${VAR// /_} \
     --print_freq 1 \
     --setting weakly \
@@ -26,7 +26,7 @@ done
 # weakly+noisy
 for VAR in '128' '64 128' '128 128' '128 64 128' '128 32 128' '128 64'
 do
-	echo CUDA_VISIBLE_DEVICES=${GPUID} python main.py \
+	CUDA_VISIBLE_DEVICES=${GPUID} python main.py \
     --name hp-${NAME}_video_${VAR// /_} \
     --print_freq 1 \
     --setting weakly \
