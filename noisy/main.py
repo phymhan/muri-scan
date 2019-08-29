@@ -62,7 +62,7 @@ class Options():
         parser.add_argument('--gru_hidden_dim', type=int, default=32)
         parser.add_argument('--gru_out_dim', type=int, default=32)
         parser.add_argument('--ce_weight', nargs='+', type=float, default=[], help='weights for CE')
-        parser.add_argument('--setting', type=str, default='clip', help='clip or video')
+        parser.add_argument('--setting', type=str, default='videov2', help='clip or video')
         parser.add_argument('--noisy', type=str2bool, default=False)
         parser.add_argument('--lambda_trace', type=float, default=0.001)
         parser.add_argument('--dim_input_map', type=int, nargs='+', default=[128])
