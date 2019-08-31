@@ -9,7 +9,7 @@ import scipy.io as sio
 import torch
 from torch import optim
 from models import BaseClipModel, BaseVideoModel, BaseVideoModelV2, WeaklyVideoModel, Identity, get_norm_layer
-from utils import init_net, make_dir, str2bool, set_logger
+from utils import init_net, make_dir, str2bool, set_logger, k_folds
 from data import ClipDataset, VideoDataset, VideoDatasetV2
 from torch.utils.data import DataLoader
 from tensorboard_logger import configure, log_value
@@ -330,19 +330,19 @@ if __name__=='__main__':
         # get dataloader
         # TODO : Combine the Train and Validation Dataset.
         dataset = get_dataset(opt, 'train') #The entire dataset (To be assumed)
+        #Spliting Dataset for Cross Validation:
+        for train_idx, val_idx in k_folds(cv_splits = opt.cv_splits, len(dataset)):
+            dataset_train = dataset[train_idx]
+            dataloader_train = DataLoader(dataset_train, shuffle=True, num_workers=opt.num_workers, batch_size=opt.batch_size)
+            opt.dataset_size = len(dataset)
 
-        dataloader = DataLoader(dataset, shuffle=True, num_workers=opt.num_workers, batch_size=opt.batch_size)
-        opt.dataset_size = len(dataset)
-        # val dataset
-        if opt.sourcefile_val:
-            dataset_val = get_dataset(opt, 'val')
+            # val dataset
+            dataset_val = val_idx
             dataloader_val = DataLoader(dataset_val, shuffle=True, num_workers=0, batch_size=1)
             opt.dataset_size_val = len(dataset_val)
-        else:
-            dataloader_val = None
-            opt.dataset_size_val = 0
-        print('dataset size = %d' % len(dataset))
-        # train
-        train(opt, net, dataloader)
+
+            print('dataset size = %d' % len(dataset))
+            # train
+            train(opt, net, dataloader_train, dataloader_test)
     else:
         raise NotImplementedError('Mode [%s] is not implemented.' % opt.mode)
