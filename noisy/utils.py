@@ -42,6 +42,7 @@ def make_dir(dir_path):
         os.makedirs(dir_path)
 
 
+
 def str2bool(v):
     """
     borrowed from:
@@ -75,3 +76,37 @@ def set_logger(output_dir=None, log_file=None):
         logging.basicConfig(level=logger_level, format=head)
         logger = logging.getLogger()
     return logger
+
+
+def k_folds(k_splits=3, dataset_size):
+    '''
+    Generates K-folds for cross-validation
+
+    Args:
+        k_splits: Number of k_folds,
+        dataset_size: Size of the dataset : For even distribution in k_folds
+    '''
+
+    indices = np.arange(dataset_size).astype(int)
+    for valid_idx in get_indices(k_splits, dataset_size):
+        train_idx = np.setdiff1d(indices, valid_idx)
+        yield train_idx, valid_idx
+
+
+def get_indices(k_splits=3, dataset_size):
+    '''
+    Get indices of the dictionary for each split
+
+    Args:
+        k_splits : Number of k_folds,
+        dataset_size: Size of the dataset : For even distribution in k_folds
+    '''
+    k_partitions = np.ones(k_splits) * int(dataset_size/k_splits)
+    k_partitions[0: (dataset_size % k_splits)] += 1
+    indices = np.arange(dataset_size).astype(int)
+    current = 0
+    for each_partition in k_partitions:
+        start = current
+        stop = current + each_partition
+        current = stop
+        yield(indices[int(start):int(stop)])
