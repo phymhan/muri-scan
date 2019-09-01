@@ -3,6 +3,7 @@ import torch
 from torch.nn import init
 import os
 import logging
+import numpy as np
 
 def init_weights(net, init_type='normal', gain=0.02):
     def init_func(m):
@@ -78,7 +79,7 @@ def set_logger(output_dir=None, log_file=None):
     return logger
 
 
-def k_folds(k_splits=3, dataset_size):
+def k_folds(dataset_size, k_splits=3):
     '''
     Generates K-folds for cross-validation
 
@@ -88,12 +89,12 @@ def k_folds(k_splits=3, dataset_size):
     '''
 
     indices = np.arange(dataset_size).astype(int)
-    for valid_idx in get_indices(k_splits, dataset_size):
+    for valid_idx in get_indices(dataset_size, k_splits):
         train_idx = np.setdiff1d(indices, valid_idx)
         yield train_idx, valid_idx
 
 
-def get_indices(k_splits=3, dataset_size):
+def get_indices(dataset_size, k_splits=3):
     '''
     Get indices of the dictionary for each split
 
@@ -109,4 +110,4 @@ def get_indices(k_splits=3, dataset_size):
         start = current
         stop = current + each_partition
         current = stop
-        yield(indices[int(start):int(stop)])
+        yield (indices[int(start):int(stop)])
