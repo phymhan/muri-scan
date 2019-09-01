@@ -11,7 +11,7 @@ from torch import optim
 from models import BaseClipModel, BaseVideoModel, BaseVideoModelV2, WeaklyVideoModel, Identity, get_norm_layer
 from utils import init_net, make_dir, str2bool, set_logger, k_folds
 from data import ClipDataset, VideoDataset, VideoDatasetV2
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 from tensorboard_logger import configure, log_value
 import torch.nn.functional as F
 import functools
@@ -33,6 +33,7 @@ class Options():
         parser.add_argument('--dataroot', default='../data/npz-video', help='path to images')
         parser.add_argument('--sourcefile', type=str, default='../sourcefiles/train_video.txt', help='text file listing images')
         parser.add_argument('--sourcefile_val', type=str, default='../sourcefiles/val_video.txt')
+        parser.add_argument('--cv_splits', type=int, default=3)
         parser.add_argument('--labelfile', type=str, default='../sourcefiles/labels.txt')
         parser.add_argument('--pretrained_model_path', type=str, default='', help='path to pretrained models')
         parser.add_argument('--checkpoint_dir', type=str, default='checkpoints')
@@ -219,7 +220,7 @@ def get_model(opt):
 
 
 # Routines for training
-def train(opt, net, dataloader):
+def train(opt, net, dataloader, dataloader_val, k):
     if len(opt.ce_weight):
         ce_weight = torch.Tensor(opt.ce_weight).cuda() if opt.use_gpu else torch.Tensor(opt.ce_weight)
         # criterion = torch.nn.CrossEntropyLoss(weight=ce_weight)
@@ -227,7 +228,7 @@ def train(opt, net, dataloader):
     else:
         # criterion = torch.nn.CrossEntropyLoss()
         criterion = torch.nn.NLLLoss()
-    opt.save_dir = os.path.join(opt.checkpoint_dir, opt.name)
+    opt.save_dir = os.path.join(opt.checkpoint_dir, opt.name+'_'+str(k))
     make_dir(opt.save_dir)
 
     optimizer = optim.Adam(net.parameters(), lr=opt.lr)
@@ -240,9 +241,9 @@ def train(opt, net, dataloader):
     num_iter_per_epoch = math.ceil(dataset_size / opt.batch_size)
     opt.display_val_acc = not not dataloader_val
 
-    if opt.tensorboard:
+    if opt.tensorboard and k == 1 :
         configure(opt.save_dir)
-    logger = set_logger(opt.save_dir, opt.name+'.log')
+    logger = set_logger(opt.save_dir, opt.name+'_'+str(k)+'.log')
     logger.info('config %s', opt)
 
     for epoch in range(opt.epoch_count, opt.num_epochs+opt.epoch_count):
@@ -330,19 +331,22 @@ if __name__=='__main__':
         # get dataloader
         # TODO : Combine the Train and Validation Dataset.
         dataset = get_dataset(opt, 'train') #The entire dataset (To be assumed)
+
         #Spliting Dataset for Cross Validation:
-        for train_idx, val_idx in k_folds(cv_splits = opt.cv_splits, len(dataset)):
-            dataset_train = dataset[train_idx]
+        k = 0
+        for train_idx, val_idx in k_folds(dataset_size=len(dataset), k_splits = opt.cv_splits):
+            dataset_train = Subset(dataset, train_idx)
             dataloader_train = DataLoader(dataset_train, shuffle=True, num_workers=opt.num_workers, batch_size=opt.batch_size)
-            opt.dataset_size = len(dataset)
+            opt.dataset_size = len(dataset_train)
 
             # val dataset
-            dataset_val = val_idx
+            dataset_val = Subset(dataset, val_idx)
             dataloader_val = DataLoader(dataset_val, shuffle=True, num_workers=0, batch_size=1)
             opt.dataset_size_val = len(dataset_val)
 
-            print('dataset size = %d' % len(dataset))
+            print('dataset size = %d' % len(dataset_train))
             # train
-            train(opt, net, dataloader_train, dataloader_test)
+            k += 1
+            train(opt, net, dataloader_train, dataloader_val, k)
     else:
         raise NotImplementedError('Mode [%s] is not implemented.' % opt.mode)
