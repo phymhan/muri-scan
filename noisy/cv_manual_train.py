@@ -33,7 +33,7 @@ class Options():
         parser.add_argument('--dataroot', default='../data/npz-video', help='path to images')
         parser.add_argument('--sourcefile', type=str, default='../sourcefiles/train_video.txt', help='text file listing images')
         parser.add_argument('--sourcefile_val', type=str, default='../sourcefiles/val_video.txt')
-        parser.add_argument('--cv_splits', type=int, default=3)
+        parser.add_argument('--cv_splits', type=int, default=5)
         parser.add_argument('--labelfile', type=str, default='../sourcefiles/labels.txt')
         parser.add_argument('--pretrained_model_path', type=str, default='', help='path to pretrained models')
         parser.add_argument('--checkpoint_dir', type=str, default='checkpoints')
