@@ -339,7 +339,10 @@ class WeaklyVideoModel(nn.Module):
         self.transition.weight.data.copy_(torch.tensor([[1, 0, 0], [0, 1, 0], [0.5, 0.5, 0]])*5.)
 
     def compute_trace(self):
-        return torch.trace(self.transition.weight)
+        return torch.trace(self.transition_matrix)
+    
+    def print_transition_matrix(self):
+        print(self.transition_matrix)
 
     def forward(self, x):
         # x.shape -> (batch_size, clip_num, time_len, global_feature_dim)
@@ -366,6 +369,7 @@ class WeaklyVideoModel(nn.Module):
             # pdb.set_trace()
             T = F.softmax(self.transition.weight)
             sigma_c = torch.mm(sigma_c.view(batch_size*clip_num, -1), T).view(batch_size, clip_num, -1)
+            self.transition_matrix = T
         sigma_d = F.softmax(self.fc1d(out), 1)  # batch_size x clip_num x num_classes
         x = sigma_c * sigma_d
         pred = torch.sum(x, dim=1)
@@ -452,7 +456,10 @@ class WeaklyVideoModelV2(nn.Module):
         self.transition[-1].bias.data.copy_(torch.tensor([1, 0, 0, 0, 1, 0, 0.5, 0.5, 0], dtype=torch.float)*5.)
 
     def compute_trace(self):
-        return torch.mean(torch.sum(torch.diagonal(self.T, dim1=1, dim2=2), 1))
+        return torch.mean(torch.sum(torch.diagonal(self.transition_matrix, dim1=1, dim2=2), 1))
+    
+    def print_transition_matrix(self):
+        print(self.transition_matrix[0])
 
     def forward(self, x):
         # x.shape -> (batch_size, clip_num, time_len, global_feature_dim)
@@ -486,11 +493,11 @@ class WeaklyVideoModelV2(nn.Module):
         sigma_c = F.softmax(self.fc1c(out), 2)  # batch_size x clip_num x num_classes
         if self.noisy:
             T = self.transition(vid_feat)  # batch_size x num_classes*num_classes
-            T = F.softmax(T.view(-1, self.num_classes, self.num_classes), 2)
+            T = F.softmax(T.view(batch_size, self.num_classes, self.num_classes), 2)
             sigma_c = torch.matmul(sigma_c.view(batch_size, clip_num, 1, self.num_classes),
                                    T.view(batch_size, 1, self.num_classes, self.num_classes))\
                 .view(batch_size, clip_num, self.num_classes)
-            self.T = T
+            self.transition_matrix = T
         sigma_d = F.softmax(self.fc1d(out), 1)  # batch_size x clip_num x num_classes
         x = sigma_c * sigma_d
         pred = torch.sum(x, dim=1)

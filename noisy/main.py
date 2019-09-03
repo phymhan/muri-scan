@@ -132,13 +132,6 @@ def get_prediction(score):
     return pred[0].reshape(batch_size)
 
 
-def normalize_transition(m):
-    # m = F.relu(m)
-    # m = m / (torch.sum(m, dim=1, keepdim=True) + MAGIC_EPS)
-    # return m
-    return F.softmax(m)
-
-
 ###############################################################################
 # Main Routines
 ###############################################################################
@@ -153,7 +146,7 @@ def get_dataset(opt, mode='train'):
             dataset = VideoDataset(opt.dataroot, opt.sourcefile, opt.labelfile, opt.time_len, opt.time_step)
         else:
             dataset = VideoDataset(opt.dataroot, opt.sourcefile_val, opt.labelfile, opt.time_len, opt.time_step)
-    elif opt.setting == 'videov2' or opt.setting == 'weakly':
+    elif opt.setting == 'videov2' or opt.setting == 'weakly' or opt.setting == 'weaklyv2':
         if mode == 'train':
             dataset = VideoDatasetV2(opt.dataroot, opt.sourcefile, opt.clip_num, opt.time_len, opt.time_step)
         else:
@@ -298,7 +291,7 @@ def train(opt, net, dataloader):
             logger.info(f'[val] epoch {epoch:02d}, acc {(1 - err_val) * 100:.2f}%')
             if opt.noisy:
                 print('--> transition matrix')
-                print(normalize_transition(net.transition.weight))
+                net.print_transition_matrix()
             if opt.tensorboard:
                 log_value(f'val/acc', 1 - err_val, epoch)
 
