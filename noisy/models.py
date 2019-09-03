@@ -203,39 +203,14 @@ class BaseVideoModelV2(nn.Module):
             params: dict with model parameters
         """
         super(BaseVideoModelV2, self).__init__()
-
-        # if not use_gru:
-        #     self.use_gru = False
-        #     self.input_map = nn.Sequential(
-        #         nn.Linear(feature_dim, embedding_dim),
-        #         nn.ReLU(),
-        #         LayerNorm(embedding_dim),
-        #         nn.Dropout(dropout),
-        #     )
-        #     out_dim = embedding_dim
-        # else:
-        #     self.use_gru = True
-        #     self.feat_dim = feature_dim
-        #     self.emb_dim = embedding_dim
-        #     self.gru_hidden_dim = gru_hidden_dim
-        #     self.gru_out_dim = gru_out_dim
-        #     self.input_map = nn.Sequential(
-        #         nn.Linear(feature_dim, embedding_dim),
-        #         nn.ReLU(),
-        #         LayerNorm(embedding_dim),
-        #         nn.Dropout(dropout),
-        #     )
-        #     self.gru = nn.GRU(embedding_dim, gru_hidden_dim)
-        #     self.gru2out = nn.Linear(gru_hidden_dim, gru_out_dim)
-        #     out_dim = gru_out_dim
-        # self.cls = nn.Linear(out_dim, num_classes)
-
+        norm_input = get_norm_layer(norm_input_map)
+        norm_fc = get_norm_layer(norm_fc)
         blocks = []
         f0 = feature_dim
         for f1 in dim_input_map:
             blocks += [nn.Linear(f0, f1),
                        nn.ReLU(),
-                       LayerNorm(f1),
+                       norm_input(f1),
                        nn.Dropout(dropout)]
             f0 = f1
         self.input_map = nn.Sequential(*blocks)
@@ -257,6 +232,7 @@ class BaseVideoModelV2(nn.Module):
         for f1 in dim_fc:
             blocks += [nn.Linear(f0, f1),
                        nn.ReLU(),
+                       norm_fc(f1),
                        nn.Dropout(dropout)]
             f0 = f1
         if blocks:
@@ -311,12 +287,14 @@ class WeaklyVideoModel(nn.Module):
             params: dict with model parameters
         """
         super(WeaklyVideoModel, self).__init__()
+        norm_input = get_norm_layer(norm_input_map)
+        norm_fc = get_norm_layer(norm_fc)
         blocks = []
         f0 = feature_dim
         for f1 in dim_input_map:
             blocks += [nn.Linear(f0, f1),
                        nn.ReLU(),
-                       LayerNorm(f1),
+                       norm_input(f1),
                        nn.Dropout(dropout)]
             f0 = f1
         self.input_map = nn.Sequential(*blocks)
@@ -338,6 +316,7 @@ class WeaklyVideoModel(nn.Module):
         for f1 in dim_fc:
             blocks += [nn.Linear(f0, f1),
                        nn.ReLU(),
+                       norm_fc(f1),
                        nn.Dropout(dropout)]
             f0 = f1
         if blocks:
