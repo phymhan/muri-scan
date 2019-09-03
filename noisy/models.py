@@ -412,14 +412,12 @@ class WeaklyVideoModelV2(nn.Module):
         blocks = []
         f0 = out_dim
         f1 = out_dim
-        for f1 in dim_fc[:-1]:
+        for f1 in dim_fc:
             blocks += [nn.Linear(f0, f1),
                        nn.ReLU(),
                        norm_fc(f1),
                        nn.Dropout(dropout)]
             f0 = f1
-        f1 = dim_fc[-1]
-        blocks += [nn.Linear(f0, f1)]
         if blocks:
             self.fc = nn.Sequential(*blocks)
         else:
