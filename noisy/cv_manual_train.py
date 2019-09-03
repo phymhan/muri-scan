@@ -334,7 +334,7 @@ if __name__=='__main__':
 
         #Spliting Dataset for Cross Validation:
         k = 0
-        for train_idx, val_idx in k_folds(dataset_size=len(dataset), k_splits = opt.cv_splits):
+        for train_idx, val_idx in stratified_k_folds(dataset), k_splits = opt.cv_splits):
             dataset_train = Subset(dataset, train_idx)
             dataloader_train = DataLoader(dataset_train, shuffle=True, num_workers=opt.num_workers, batch_size=opt.batch_size)
             opt.dataset_size = len(dataset_train)

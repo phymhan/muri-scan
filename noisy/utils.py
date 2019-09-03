@@ -78,21 +78,27 @@ def set_logger(output_dir=None, log_file=None):
         logger = logging.getLogger()
     return logger
 
+def get_X_y(dataset):
+    X = []
+    y = []
+    for i,(a, b) in enumerate(dataset):
+        X.append(a)
+        y.append(b)
+    return X, y
 
-def k_folds(dataset_size, k_splits=3):
+def k_folds(dataset, k_splits=3):
     '''
     Generates K-folds for cross-validation
 
     Args:
         k_splits: Number of k_folds,
-        dataset_size: Size of the dataset : For even distribution in k_folds
+        dataset: np.zeros()
     '''
-
+    dataset_size = len(dataset)
     indices = np.arange(dataset_size).astype(int)
     for valid_idx in get_indices(dataset_size, k_splits):
         train_idx = np.setdiff1d(indices, valid_idx)
-        yield train_idx, valid_idx
-
+        yield np.take(dataset, train_idx), np.take(dataset, valid_idx)
 
 def get_indices(dataset_size, k_splits=3):
     '''
@@ -102,6 +108,7 @@ def get_indices(dataset_size, k_splits=3):
         k_splits : Number of k_folds,
         dataset_size: Size of the dataset : For even distribution in k_folds
     '''
+
     k_partitions = np.ones(k_splits) * int(dataset_size/k_splits)
     k_partitions[0: (dataset_size % k_splits)] += 1
     indices = np.arange(dataset_size).astype(int)
@@ -111,3 +118,86 @@ def get_indices(dataset_size, k_splits=3):
         stop = current + each_partition
         current = stop
         yield (indices[int(start):int(stop)])
+
+
+def startified_k_folds(dataset, k_splits=3):
+    '''
+    Generates K-folds for cross-validation
+
+    Args:
+        k_splits: Number of k_folds,
+        dataset_size: Size of the dataset : For even distribution in k_folds
+    '''
+    X, y = get_X_y(dataset)
+
+
+    indices = np.arange(dataset_size).astype(int)
+    for valid_idx in stratified_get_indices(X, y, k_splits):
+        train_idx = np.setdiff1d(indices, valid_idx)
+        yield train_idx, valid_idx
+
+
+def stratified_get_indices(X, y, k_splits=3):
+    '''
+    Get indices of the dictionary for each split
+
+    Args:
+        k_splits : Number of k_folds,
+        dataset_size: Size of the dataset : For even distribution in k_folds
+    '''
+
+    y = np.asarray(y)
+    n_samples = y.shape[0]
+    unique_y, y_inversed = np.unique(y, return_inverse=True)
+    y_counts = np.bincount(y_inversed)
+    min_groups = np.min(y_counts)
+    if np.all(self.k_splits > y_counts):
+        raise ValueError("k_splits=%d cannot be greater than the"
+                             " number of members in each class."
+                             % (self.k_splits))
+    if self.k_splits > min_groups:
+            warnings.warn(("The least populated class in y has only %d"
+                           " members, which is too few. The minimum"
+                           " number of members in any class cannot"
+                           " be less than k_splits=%d."
+                           % (min_groups, self.k_splits)), Warning)
+
+    # pre-assign each sample to a test fold index using individual KFold
+    # splitting strategies for each class so as to respect the balance of
+    # classes
+    # NOTE: Passing the data corresponding to ith class say X[y==class_i]
+    # will break when the data is not 100% stratifiable for all classes.
+    # So we pass np.zeroes(max(c, k_splits)) as data to the KFold
+
+    per_cls_cvs = [
+            k_folds(np.zeros(max(count, k_splits)), k_splits)
+            for count in y_counts]
+
+    test_folds = np.zeros(n_samples, dtype=np.int)
+    for test_fold_indices, per_cls_splits in enumerate(zip(*per_cls_cvs)):
+            for cls, (_, test_split) in zip(unique_y, per_cls_splits):
+                cls_test_folds = test_folds[y == cls]
+                # the test split can be too big because we used
+                # KFold(...).split(X[:max(c, n_splits)]) when data is not 100%
+                # stratifiable for all the classes
+                # (we use a warning instead of raising an exception)
+                # If this is the case, let's trim it:
+                test_split = test_split[test_split < len(cls_test_folds)]
+                cls_test_folds[test_split] = test_fold_indices
+                test_folds[y == cls] = cls_test_folds
+
+    for i in range(self.k_splits):
+        yield test_folds == i
+
+
+
+
+    # k_partitions = np.ones(k_splits) * int(dataset_size/k_splits)
+    # k_partitions[0: (dataset_size % k_splits)] += 1
+    # indices = np.arange(dataset_size).astype(int)
+    # current = 0
+    # for each_partition in k_partitions:
+    #     start = current
+    #     stop = current + each_partition
+    #     current = stop
+    #     yield (indices[int(start):int(stop)])
