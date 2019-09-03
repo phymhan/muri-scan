@@ -8,7 +8,7 @@ from scipy import stats
 import scipy.io as sio
 import torch
 from torch import optim
-from models import BaseClipModel, BaseVideoModel, BaseVideoModelV2, WeaklyVideoModel, Identity, get_norm_layer
+from models import BaseClipModel, BaseVideoModel, BaseVideoModelV2, WeaklyVideoModel
 from utils import init_net, make_dir, str2bool, set_logger
 from data import ClipDataset, VideoDataset, VideoDatasetV2
 from torch.utils.data import DataLoader
@@ -164,8 +164,8 @@ def get_dataset(opt, mode='train'):
 def get_model(opt):
     # define model
     net = None
-    norm_input_map = get_norm_layer(opt.norm_input_map)
-    norm_fc = get_norm_layer(opt.norm_fc)
+    # norm_input_map = get_norm_layer(opt.norm_input_map)
+    # norm_fc = get_norm_layer(opt.norm_fc)
     if opt.setting == 'clip':
         if opt.which_model == 'base':
             net = BaseClipModel(num_classes=opt.num_classes, use_gru=opt.use_gru, feature_dim=opt.feature_dim, embedding_dim=opt.embedding_dim,
@@ -182,14 +182,14 @@ def get_model(opt):
         if opt.which_model == 'base':
             net = BaseVideoModelV2(num_classes=opt.num_classes, use_gru=opt.use_gru, feature_dim=opt.feature_dim, embedding_dim=opt.embedding_dim,
                                    gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout, noisy=opt.noisy,
-                                   dim_input_map=opt.dim_input_map, norm_input_map=norm_input_map, dim_fc=opt.dim_fc, norm_fc=norm_fc)
+                                   dim_input_map=opt.dim_input_map, norm_input_map=opt.norm_input_map, dim_fc=opt.dim_fc, norm_fc=opt.norm_fc)
         else:
             raise NotImplementedError('Model [%s] is not implemented.' % opt.which_model)
     elif opt.setting == 'weakly':
         if opt.which_model == 'base':
             net = WeaklyVideoModel(num_classes=opt.num_classes, use_gru=opt.use_gru, feature_dim=opt.feature_dim, embedding_dim=opt.embedding_dim,
                                    gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout, noisy=opt.noisy,
-                                   dim_input_map=opt.dim_input_map, norm_input_map=norm_input_map, dim_fc=opt.dim_fc, norm_fc=norm_fc)
+                                   dim_input_map=opt.dim_input_map, norm_input_map=opt.norm_input_map, dim_fc=opt.dim_fc, norm_fc=opt.norm_fc)
         else:
             raise NotImplementedError('Model [%s] is not implemented.' % opt.which_model)
     else:
