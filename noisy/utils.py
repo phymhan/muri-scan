@@ -120,7 +120,7 @@ def get_indices(dataset_size, k_splits=3):
         yield (indices[int(start):int(stop)])
 
 
-def startified_k_folds(dataset, k_splits=3):
+def stratified_k_folds(dataset, k_splits=3):
     '''
     Generates K-folds for cross-validation
 
@@ -130,7 +130,7 @@ def startified_k_folds(dataset, k_splits=3):
     '''
     X, y = get_X_y(dataset)
 
-
+    dataset_size = len(X)
     indices = np.arange(dataset_size).astype(int)
     for valid_idx in stratified_get_indices(X, y, k_splits):
         train_idx = np.setdiff1d(indices, valid_idx)
@@ -151,16 +151,16 @@ def stratified_get_indices(X, y, k_splits=3):
     unique_y, y_inversed = np.unique(y, return_inverse=True)
     y_counts = np.bincount(y_inversed)
     min_groups = np.min(y_counts)
-    if np.all(self.k_splits > y_counts):
+    if np.all(k_splits > y_counts):
         raise ValueError("k_splits=%d cannot be greater than the"
                              " number of members in each class."
-                             % (self.k_splits))
-    if self.k_splits > min_groups:
+                             % (k_splits))
+    if k_splits > min_groups:
             warnings.warn(("The least populated class in y has only %d"
                            " members, which is too few. The minimum"
                            " number of members in any class cannot"
                            " be less than k_splits=%d."
-                           % (min_groups, self.k_splits)), Warning)
+                           % (min_groups, k_splits)), Warning)
 
     # pre-assign each sample to a test fold index using individual KFold
     # splitting strategies for each class so as to respect the balance of
@@ -170,7 +170,7 @@ def stratified_get_indices(X, y, k_splits=3):
     # So we pass np.zeroes(max(c, k_splits)) as data to the KFold
 
     per_cls_cvs = [
-            k_folds(np.zeros(max(count, k_splits)), k_splits)
+            k_folds(np.zeros(max(count, k_splits), dtype=np.int), k_splits)
             for count in y_counts]
 
     test_folds = np.zeros(n_samples, dtype=np.int)
@@ -186,7 +186,7 @@ def stratified_get_indices(X, y, k_splits=3):
                 cls_test_folds[test_split] = test_fold_indices
                 test_folds[y == cls] = cls_test_folds
 
-    for i in range(self.k_splits):
+    for i in range(k_splits):
         yield test_folds == i
 
 
