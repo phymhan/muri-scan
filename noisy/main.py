@@ -8,7 +8,7 @@ from scipy import stats
 import scipy.io as sio
 import torch
 from torch import optim
-from models import BaseClipModel, BaseVideoModel, BaseVideoModelV2, WeaklyVideoModel
+from models import BaseClipModel, BaseVideoModel, BaseVideoModelV2, WeaklyVideoModel, WeaklyVideoModelV2
 from utils import init_net, make_dir, str2bool, set_logger
 from data import ClipDataset, VideoDataset, VideoDatasetV2
 from torch.utils.data import DataLoader
@@ -69,6 +69,8 @@ class Options():
         parser.add_argument('--dim_fc', type=int, nargs='+', default=[])
         parser.add_argument('--norm_input_map', type=str, default='norm')
         parser.add_argument('--norm_fc', type=str, default='norm')
+        parser.add_argument('--video_pooling', type=str, default='avg')
+        parser.add_argument('--dim_fc_noisy', type=int, nargs='+', default=[])
         return parser
 
     def get_options(self):
@@ -167,31 +169,24 @@ def get_model(opt):
     # norm_input_map = get_norm_layer(opt.norm_input_map)
     # norm_fc = get_norm_layer(opt.norm_fc)
     if opt.setting == 'clip':
-        if opt.which_model == 'base':
-            net = BaseClipModel(num_classes=opt.num_classes, use_gru=opt.use_gru, feature_dim=opt.feature_dim, embedding_dim=opt.embedding_dim,
-                                gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout, noisy=opt.noisy)
-        else:
-            raise NotImplementedError('Model [%s] is not implemented.' % opt.which_model)
+        net = BaseClipModel(num_classes=opt.num_classes, use_gru=opt.use_gru, feature_dim=opt.feature_dim, embedding_dim=opt.embedding_dim,
+                            gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout, noisy=opt.noisy)
     elif opt.setting == 'video':
-        if opt.which_model == 'base':
-            net = BaseVideoModel(num_classes=opt.num_classes, use_gru=opt.use_gru, feature_dim=opt.feature_dim, embedding_dim=opt.embedding_dim,
-                                 gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout, noisy=opt.noisy)
-        else:
-            raise NotImplementedError('Model [%s] is not implemented.' % opt.which_model)
+        net = BaseVideoModel(num_classes=opt.num_classes, use_gru=opt.use_gru, feature_dim=opt.feature_dim, embedding_dim=opt.embedding_dim,
+                             gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout, noisy=opt.noisy)
     elif opt.setting == 'videov2':
-        if opt.which_model == 'base':
-            net = BaseVideoModelV2(num_classes=opt.num_classes, use_gru=opt.use_gru, feature_dim=opt.feature_dim, embedding_dim=opt.embedding_dim,
-                                   gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout, noisy=opt.noisy,
-                                   dim_input_map=opt.dim_input_map, norm_input_map=opt.norm_input_map, dim_fc=opt.dim_fc, norm_fc=opt.norm_fc)
-        else:
-            raise NotImplementedError('Model [%s] is not implemented.' % opt.which_model)
+        net = BaseVideoModelV2(num_classes=opt.num_classes, use_gru=opt.use_gru, feature_dim=opt.feature_dim, embedding_dim=opt.embedding_dim,
+                               gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout, noisy=opt.noisy,
+                               dim_input_map=opt.dim_input_map, norm_input_map=opt.norm_input_map, dim_fc=opt.dim_fc, norm_fc=opt.norm_fc)
     elif opt.setting == 'weakly':
-        if opt.which_model == 'base':
-            net = WeaklyVideoModel(num_classes=opt.num_classes, use_gru=opt.use_gru, feature_dim=opt.feature_dim, embedding_dim=opt.embedding_dim,
-                                   gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout, noisy=opt.noisy,
-                                   dim_input_map=opt.dim_input_map, norm_input_map=opt.norm_input_map, dim_fc=opt.dim_fc, norm_fc=opt.norm_fc)
-        else:
-            raise NotImplementedError('Model [%s] is not implemented.' % opt.which_model)
+        net = WeaklyVideoModel(num_classes=opt.num_classes, use_gru=opt.use_gru, feature_dim=opt.feature_dim, embedding_dim=opt.embedding_dim,
+                               gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout, noisy=opt.noisy,
+                               dim_input_map=opt.dim_input_map, norm_input_map=opt.norm_input_map, dim_fc=opt.dim_fc, norm_fc=opt.norm_fc)
+    elif opt.setting == 'weaklyv2':
+        net = WeaklyVideoModelV2(num_classes=opt.num_classes, use_gru=opt.use_gru, feature_dim=opt.feature_dim, embedding_dim=opt.embedding_dim,
+                                 gru_hidden_dim=opt.gru_hidden_dim, gru_out_dim=opt.gru_out_dim, dropout=opt.dropout, noisy=opt.noisy,
+                                 dim_input_map=opt.dim_input_map, norm_input_map=opt.norm_input_map, dim_fc=opt.dim_fc, norm_fc=opt.norm_fc,
+                                 video_pooling=opt.video_pooling, dim_fc_noisy=opt.dim_fc_noisy)
     else:
         raise NotImplementedError('Setting [%s] is not implemented.' % opt.setting)
 
@@ -201,7 +196,8 @@ def get_model(opt):
         if opt.noisy:
             # init transition matrix as identity
             # net.transition.weight.data.copy_(torch.eye(opt.num_classes))
-            net.transition.weight.data.copy_(torch.tensor([[1, 0, 0], [0, 1, 0], [0.5, 0.5, 0]])*5.)
+            # net.transition.weight.data.copy_(torch.tensor([[1, 0, 0], [0, 1, 0], [0.5, 0.5, 0]])*5.)
+            net.init_transition()
         if opt.pretrained_model_path:
             if isinstance(net, torch.nn.DataParallel):
                 net.module.load_pretrained(opt.pretrained_model_path)
@@ -263,8 +259,8 @@ def train(opt, net, dataloader):
             y_pred = net(x)
             logsoftmax = torch.log(y_pred + MAGIC_EPS)
             loss = criterion(logsoftmax, y)
-            if opt.noisy:
-                trace = torch.trace(net.transition.weight)
+            if opt.noisy and opt.lambda_trace > 0.:
+                trace = net.compute_trace()
                 loss += opt.lambda_trace * trace
             # get predictions
             pred_train.append(get_prediction(y_pred))
