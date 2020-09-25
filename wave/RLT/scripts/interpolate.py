@@ -77,7 +77,11 @@ def interpolate2():
 			f.write(','.join(keep_cols) + '\n')
 			for i in range(Y.shape[0]):
 				ll = [str(w) for w in Y[i]]
+<<<<<<< HEAD
 				f.write(','.join(ll) + '\n')
+=======
+				f.write(','.join(ll) + '\n')			
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
 
 
 

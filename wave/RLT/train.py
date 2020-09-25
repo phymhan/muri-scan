@@ -7,20 +7,31 @@ import torch
 from torch.nn import init
 import torch.optim as optim
 from torch.utils.data import DataLoader
+<<<<<<< HEAD
 #from torch.utils.tensorboard import SummaryWriter
+=======
+from torch.utils.tensorboard import SummaryWriter
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
 from torch.nn.functional import softmax
 
 import utils
 import models
+<<<<<<< HEAD
 from models import TCN
+=======
+from models import TSN
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
 from metrics import accuracy
 
 import pdb
 from torchsummary import summary
 from torch.optim.optimizer import Optimizer, required
+<<<<<<< HEAD
 global MAGIC_EPS
 MAGIC_EPS = 1e-20
 
+=======
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
 
 class Adam_HD(Optimizer):
 
@@ -115,12 +126,21 @@ def init_network(net, init_method='xavier', gain=1):
 
 def get_model(opt):
     model = None
+<<<<<<< HEAD
     if opt.model == 'TCN':
         model = TCN(opt)
     else:
         raise NotImplementedError('Model [{}] is not implemented.'.format(opt.model))
 
     if opt.mode != 'train' and not opt.bayesian:
+=======
+    if opt.model == 'TSN':
+        model = TSN(opt)
+    else:
+        raise NotImplementedError('Model [{}] is not implemented.'.format(opt.model))
+
+    if opt.mode != 'train':
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
         model.eval()
     if opt.use_gpu:
         model.cuda()
@@ -196,8 +216,12 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, crite
                 train_batch, labels_batch = train_batch.cuda(), labels_batch.cuda()
             
             output_batch = model(train_batch)
+<<<<<<< HEAD
             prob = softmax(output_batch)
             loss = criterion(torch.log(prob + MAGIC_EPS), labels_batch)
+=======
+            loss         = criterion(output_batch, labels_batch)
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
 
             # clear previous gradients, compute gradients of all variables wrt loss and update using calculated gradients
             optimizer.zero_grad()
@@ -223,6 +247,7 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, crite
             if opt.use_gpu:
                 data_batch, labels_batch = data_batch.cuda(), labels_batch.cuda()
             
+<<<<<<< HEAD
             prob = 0.
             for t in range(opt.bayesian_T):
                 output_batch = model(data_batch)
@@ -233,6 +258,17 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, crite
 
             labels.append(labels_batch.item())
             preds.append(prob[0][1].item())
+=======
+            output_batch = model(data_batch)
+            loss         = criterion(output_batch, labels_batch)
+
+            preds_batch  = softmax(output_batch, dim=1)
+            output_batch = output_batch.data.cpu().numpy()
+            labels_batch = labels_batch.data.cpu().numpy()
+        
+            labels.append(labels_batch.item())
+            preds.append(preds_batch[0][1].item())
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
 
             # compute all metrics on this batch
             summary_batch = {metric: metrics[metric](output_batch, labels_batch) for metric in metrics}
@@ -267,11 +303,19 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, crite
         
         # save weights
         is_best = val_acc > best_val_acc
+<<<<<<< HEAD
         utils.save_checkpoint({'epoch'     : epoch+1,
                                'state_dict': model.state_dict(),
                                'optim_dict': optimizer.state_dict()},
                                is_best     = is_best,
                                checkpoint  = opt.checkpoint_dir)
+=======
+        # utils.save_checkpoint({'epoch'     : epoch+1,
+        #                        'state_dict': model.state_dict(),
+        #                        'optim_dict': optimizer.state_dict()},
+        #                        is_best     = is_best,
+        #                        checkpoint  = opt.checkpoint_dir)
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
         
         if is_best:
             print("### Found new best accuracy -> {} -- epoch: {}".format(val_acc, epoch+1))
@@ -311,14 +355,23 @@ if __name__ == '__main__':
     opt.name = opt.name + "_L="+str(opt.kernel_size) +"_e="+str(opt.embed_dim) +"_i="+opt.init_method+\
                 "_f="+str(opt.num_frames) +"_ts="+str(opt.time_stride) +"_"+opt.activation
     summary(model, input_size=(opt.feature_dim, opt.num_frames))
+<<<<<<< HEAD
     metrics = {'accuracy': accuracy}
+=======
+    metrics = {
+        'accuracy': accuracy,
+    }
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
 
     # run k iterations of K-fold cross-validation
     accs_train = []
     accs_val   = []
     aucs = []
     batches = [len(splits_dict[i]) for i in splits_dict.keys()]
+<<<<<<< HEAD
     total_num = sum(batches)
+=======
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
     folds_num = len(splits_dict.keys())
     for i in range(folds_num):
         x_val = splits_dict[i].copy()
@@ -328,17 +381,30 @@ if __name__ == '__main__':
             if j!=i:
                 x_train = x_train + splits_dict[j]
         
+<<<<<<< HEAD
         W = None
+=======
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
         if opt.weighted_CE:
             stats = utils.get_stats(x_train)
             total = stats["truth"] + stats["lie"]
             W     = torch.Tensor([total/stats["truth"], total/stats["lie"]]).cuda()
+<<<<<<< HEAD
         # criterion = torch.nn.CrossEntropyLoss(weight=W)
         criterion = torch.nn.NLLLoss(weight=W)
 
         # Create the input data pipeline
         bs = total_num-batches[i] if opt.use_gd else opt.batch_size
         train_dataloader = DataLoader(utils.get_dataset(opt, x_train), shuffle=True, num_workers=opt.num_workers, batch_size=bs)
+=======
+            criterion = torch.nn.CrossEntropyLoss(weight=W)
+        else:
+            criterion = torch.nn.CrossEntropyLoss()
+
+
+        # Create the input data pipeline
+        train_dataloader = DataLoader(utils.get_dataset(opt, x_train), shuffle=True, num_workers=opt.num_workers, batch_size=104-batches[i])
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
         val_dataloader   = DataLoader(utils.get_dataset(opt, x_val),   shuffle=False, num_workers=0, batch_size=1)
         
         # (re)-initialize | (re)-load weights
@@ -362,5 +428,9 @@ if __name__ == '__main__':
         aucs.append(val_auc)
         
     logging.info("-- {} - {} epochs\n- Train_Acc: {}\n- Val Acc: {}\n- Val AUC: {}".format(opt.name, opt.num_epochs, accs_train, accs_val, aucs) )
+<<<<<<< HEAD
     logging.info("### Av. Train_Acc: {} --- Av. Val_Acc: {} --- Av. AUC: {}".format( np.mean(accs_train), max(np.mean(accs_val), val_acc2/total_num), np.mean(aucs)) )
+=======
+    logging.info("### Av. Train_Acc: {} --- Av. Val_Acc: {:.2f} --- Av. AUC: {:.2f}".format( np.mean(accs_train), max(np.mean(accs_val), val_acc2/104), np.mean(aucs)) )
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
     logging.info("###########")

@@ -12,7 +12,11 @@ from torch.nn.functional import softmax
 
 import utils
 import models
+<<<<<<< HEAD
 from models import *
+=======
+from models import TSN
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
 from metrics import accuracy
 
 import pdb
@@ -112,10 +116,15 @@ def init_network(net, init_method='xavier', gain=1):
 
 def get_model(opt):
     model = None
+<<<<<<< HEAD
     if opt.model == 'TCN':
         model = TCN(opt)
     elif opt.model == 'NewModel':
         model = NewModel(opt)
+=======
+    if opt.model == 'TSN':
+        model = TSN(opt)
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
     else:
         raise NotImplementedError('Model [{}] is not implemented.'.format(opt.model))
 
@@ -264,11 +273,19 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, crite
         
         # save weights
         is_best = val_acc > best_val_acc
+<<<<<<< HEAD
         utils.save_checkpoint({'epoch'     : epoch+1,
                                'state_dict': model.state_dict(),
                                'optim_dict': optimizer.state_dict()},
                                is_best     = is_best,
                                checkpoint  = opt.checkpoint_dir)
+=======
+        # utils.save_checkpoint({'epoch'     : epoch+1,
+        #                        'state_dict': model.state_dict(),
+        #                        'optim_dict': optimizer.state_dict()},
+        #                        is_best     = is_best,
+        #                        checkpoint  = opt.checkpoint_dir)
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
         
         if is_best:
             print("### Found new best accuracy -> {} -- epoch: {}".format(val_acc, epoch+1))
@@ -317,7 +334,10 @@ if __name__ == '__main__':
     accs_val   = []
     aucs = []
     batches = [len(splits_dict[i]) for i in splits_dict.keys()]
+<<<<<<< HEAD
     total_num = sum(batches)
+=======
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
     folds_num = len(splits_dict.keys())
     for i in range(folds_num):
         x_val = splits_dict[i].copy()
@@ -326,6 +346,7 @@ if __name__ == '__main__':
         for j in range(folds_num):
             if j!=i:
                 x_train = x_train + splits_dict[j]
+<<<<<<< HEAD
 
         # Create the input data pipeline
         bs = total_num-batches[i] if opt.use_gd else opt.batch_size
@@ -339,6 +360,21 @@ if __name__ == '__main__':
             criterion = torch.nn.CrossEntropyLoss(weight=W)
         else:
             criterion = torch.nn.CrossEntropyLoss()
+=======
+        
+        if opt.weighted_CE:
+            stats = utils.get_stats(x_train)
+            total = stats["truth"] + stats["lie"]
+            W     = torch.Tensor([total/stats["truth"], total/stats["lie"]]).cuda()
+            criterion = torch.nn.CrossEntropyLoss(weight=W)
+        else:
+            criterion = torch.nn.CrossEntropyLoss()
+
+
+        # Create the input data pipeline
+        train_dataloader = DataLoader(utils.get_dataset(opt, x_train), shuffle=True, num_workers=opt.num_workers, batch_size=104-batches[i])
+        val_dataloader   = DataLoader(utils.get_dataset(opt, x_val),   shuffle=False, num_workers=0, batch_size=1)
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
         
         # (re)-initialize | (re)-load weights
         if opt.mode == 'train' and not opt.train_cont:    
@@ -361,5 +397,9 @@ if __name__ == '__main__':
         aucs.append(val_auc)
         
     logging.info("-- {} - {} epochs\n- Train_Acc: {}\n- Val Acc: {}\n- Val AUC: {}".format(opt.name, opt.num_epochs, accs_train, accs_val, aucs) )
+<<<<<<< HEAD
     logging.info("### Av. Train_Acc: {} --- Av. Val_Acc: {} --- Av. AUC: {}".format( np.mean(accs_train), max(np.mean(accs_val), val_acc2/total_num), np.mean(aucs)) )
+=======
+    logging.info("### Av. Train_Acc: {} --- Av. Val_Acc: {:.2f} --- Av. AUC: {:.2f}".format( np.mean(accs_train), max(np.mean(accs_val), val_acc2/104), np.mean(aucs)) )
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
     logging.info("###########")

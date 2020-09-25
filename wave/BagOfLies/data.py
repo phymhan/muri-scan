@@ -1,10 +1,13 @@
 import os
 import numpy as np
 from torch.utils.data import Dataset
+<<<<<<< HEAD
 import pdb
 import cv2
 import utils
 from localbinarypatterns import LocalBinaryPatterns
+=======
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
 
 
 class BagOfLies(Dataset):
@@ -48,6 +51,7 @@ class BagOfLies(Dataset):
         features = np.concatenate((gaze, aus), axis=1)
         
         return features.T, label
+<<<<<<< HEAD
 
 
 class BagOfLiesImage(Dataset):
@@ -96,3 +100,5 @@ class BagOfLiesImage(Dataset):
         
         hist = np.concatenate(hists)
         return hist, label
+=======
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24

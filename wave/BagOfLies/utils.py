@@ -5,9 +5,13 @@ import shutil
 import argparse
 import torch
 import pdb
+<<<<<<< HEAD
 from data import BagOfLies, BagOfLiesImage
 import cv2
 import numpy as np
+=======
+from data import BagOfLies
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
 
 ###############################################################################
 # Options | Argument Parser
@@ -19,33 +23,54 @@ class Options():
 
         # Data params
         parser.add_argument('--dataroot',                 default='./data', help='data path')
+<<<<<<< HEAD
         parser.add_argument('--imageroot',                default='/media/ligong/Picasso/Datasets/BagOfLies/openface/')
         parser.add_argument('--labels',         type=str, default='labels.txt')
         parser.add_argument('--splits',         type=str, default='splits_3.txt', help='text file listing cross-validation splits')
         parser.add_argument('--test_list',      type=str, default='test.txt')
+=======
+        parser.add_argument('--labels',         type=str, default='labels.txt')
+        parser.add_argument('--splits',         type=str, default='splits.txt', help='text file listing cross-validation splits')
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
         parser.add_argument('--checkpoint_dir', type=str, default='./experiments/checkpoints', help='directory containing model checkpoints')
         parser.add_argument('--restore_model',  type=str, default='',       help='name of the file that the model is stored')
         
         parser.add_argument('--setting',        type=str, default='openface', help='openface | raw_video')
+<<<<<<< HEAD
         parser.add_argument('--num_frames',     type=int, default=90)
+=======
+        parser.add_argument('--num_frames',     type=int, default=180)
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
         parser.add_argument('--time_stride',    type=int, default=1)
 
         # Training params
         parser.add_argument('--lr',             type=float,    default=3e-4, help='learning rate')
+<<<<<<< HEAD
         parser.add_argument('--batch_size',     type=int,      default=32,   help='batch size')
+=======
+        parser.add_argument('--batch_size',     type=int,      default=12,   help='batch size')
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
         parser.add_argument('--num_epochs',     type=int,      default=100,  help='number of epochs')
         parser.add_argument('--num_workers',    type=int,      default=4,    help='number of workers for data loader')
         parser.add_argument('--gpu_ids',        type=str,      default='1',  help='gpu ids: e.g. 0  0,1,2, 0,2 | use '' for CPU')
         parser.add_argument('--train_cont',     type=str2bool, default=False)
+<<<<<<< HEAD
         parser.add_argument('--weighted_CE',    type=str2bool, default=True)
         parser.add_argument('--use_gd',         type=str2bool, default=False)
+=======
+        parser.add_argument('--weighted_CE',    type=str2bool, default=False)
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
                
         # Model params
         parser.add_argument('--num_classes',    type=int,   default=2,        help='number of classes')
         parser.add_argument('--feature_dim',    type=int,   default=19,       help='dimension of the input fetures (when using the OpenFace setting)')
         parser.add_argument('--kernel_size',    type=int,   default=11,       help='dimension of the kernel size to use for the first Conv')
         parser.add_argument('--embed_dim',      type=int,   default=128,      help='number of filters to use for the first Conv')
+<<<<<<< HEAD
         parser.add_argument('--model',          type=str,   default='TCN',    help='name the model to use')
+=======
+        parser.add_argument('--model',          type=str,   default='TSN',    help='name the model to use')
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
         #parser.add_argument('--dropout',        type=float, default=0.0,      help='dropout rate')
         parser.add_argument('--activation',     type=str,   default='relu',   help='activation function [Relu | LeakyRelu | ELU | Softplus]')
         parser.add_argument('--init_method',    type=str,   default='kaiming', help='network initialization [normal | xavier | kaiming | orthogonal]')
@@ -57,11 +82,15 @@ class Options():
         parser.add_argument('--tensorboard',     type=str2bool, default=True)
         parser.add_argument('--log_dir',         type=str,      default='./experiments/',    help='directory used for logging')
         parser.add_argument('--tensorboard_dir', type=str,      default='./experiments/TB/', help='directory to save Tensorboard visualizations')
+<<<<<<< HEAD
 
         parser.add_argument('--gradcam_layer',   type=str, default='conv_block1')
         parser.add_argument('--bayesian', type=str2bool, default=False)
         parser.add_argument('--dropout', type=float, default=0.0)
         parser.add_argument('--bayesian_T', type=int, default=10)
+=======
+        
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
         return parser
 
     def get_options(self):
@@ -110,6 +139,7 @@ def get_dataset(opt, file_list):
         raise NotImplementedError('Setting [%s] is not implemented.' % opt.setting)
     return dataset
 
+<<<<<<< HEAD
 def get_image_dataset(opt, file_list):
 
     if opt.setting == 'openface':    
@@ -124,6 +154,13 @@ def get_stats(file_list, labels):
         sample = sample.replace('/', '-')
         dd[labels[sample]] += 1
     return dd
+=======
+def get_stats(file_list):
+    dd = {"truth": 0, "lie": 0}
+    for sample in file_list:
+        dd[sample.split("_")[1]] += 1
+    return dd    
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
 
 ### ----------------------------------------------------------------------------
 # Save and load model
@@ -199,6 +236,7 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
+<<<<<<< HEAD
 
 
 def sample_random_frame_from_video(name):
@@ -221,3 +259,5 @@ def sample_random_frame_from_video(name):
         _, image = vid.read()
     vid.release()
     return image
+=======
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24

@@ -1,10 +1,13 @@
 import os
 import numpy as np
 from torch.utils.data import Dataset
+<<<<<<< HEAD
 import pdb
 import cv2
 import utils
 from localbinarypatterns import LocalBinaryPatterns
+=======
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
 
 
 class RLT(Dataset):
@@ -39,7 +42,11 @@ class RLT(Dataset):
         
         video_frames = data['arr_0'].shape[0]
         if video_frames <= self.num_frames:
+<<<<<<< HEAD
             start_idx = 0
+=======
+            start_idx = 0     
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
         else:
             start_idx = np.random.randint(0, video_frames - self.num_frames * self.time_stride)
         # features  = np.array(data['arr_0'][start_idx:start_idx + self.num_frames * self.time_stride:self.time_stride, 15:], dtype='float32')
@@ -48,6 +55,7 @@ class RLT(Dataset):
         features = np.concatenate((gaze, aus), axis=1)
         
         return features.T, label
+<<<<<<< HEAD
 
 
 # class RLTImage(Dataset):
@@ -125,3 +133,5 @@ class RLTImage(Dataset):
         
         hist = np.concatenate(hists)
         return hist, label
+=======
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24

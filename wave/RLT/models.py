@@ -5,6 +5,7 @@ from torchsummary import summary
 
 import utils
 import numpy as np
+<<<<<<< HEAD
 import functools
 
 
@@ -14,6 +15,8 @@ class Identity(nn.Module):
 
     def forward(self, x):
         return x
+=======
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
 
 
 def conv_block(in_ch, out_ch, L, activation='relu'):
@@ -22,11 +25,19 @@ def conv_block(in_ch, out_ch, L, activation='relu'):
     return 
 
 
+<<<<<<< HEAD
 class TCN(nn.Module):
 
     class Block( nn.Module):
         def __init__( self, B, P, D):
             super( TCN.Block, self).__init__()
+=======
+class TSN(nn.Module):
+
+    class Block( nn.Module):
+        def __init__( self, B, P, D):
+            super( TSN.Block, self).__init__()
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
 
             self.m = nn.ModuleList( [
               nn.Conv1d(in_channels=B, out_channels=B, kernel_size=P,
@@ -43,11 +54,15 @@ class TCN(nn.Module):
 
 
     def __init__(self, opt):
+<<<<<<< HEAD
         super(TCN, self).__init__()
         if opt.dropout > 0:
             drop_layer = functools.partial(nn.Dropout, p=opt.dropout)
         else:
             drop_layer = Identity
+=======
+        super(TSN, self).__init__()
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
         self.L         = opt.kernel_size
         self.input_dim = opt.feature_dim
         self.embed_dim = opt.embed_dim
@@ -63,6 +78,7 @@ class TCN(nn.Module):
                 nn.Conv1d(in_channels=self.input_dim, out_channels=self.embed_dim, 
                         kernel_size=self.L, stride=self.L//2, padding=self.L//2, bias=False),
                 self.activations[opt.activation],
+<<<<<<< HEAD
                 drop_layer(),
                 nn.BatchNorm1d(self.embed_dim)
             )
@@ -74,6 +90,15 @@ class TCN(nn.Module):
 
         self.sm = nn.ModuleList([
             TCN.Block(B=self.embed_dim, P=3, D=2**d) for _ in range(opt.num_blocks) for d in range(1)
+=======
+                nn.BatchNorm1d(self.embed_dim)
+            )
+        # dense layer
+        self.conv2 = nn.Conv1d(in_channels=self.embed_dim, out_channels=self.embed_dim, kernel_size=1)
+
+        self.sm = nn.ModuleList([
+            TSN.Block(B=self.embed_dim, P=3, D=2**d) for _ in range(opt.num_blocks) for d in range(1)
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
         ])
 
         self.avg_pool  = nn.AdaptiveAvgPool1d(1)
@@ -91,7 +116,14 @@ class TCN(nn.Module):
         return x
 
 
+<<<<<<< HEAD
 if __name__ == "__main__":
     opt = utils.Options().get_options()
     model = TCN(opt)
+=======
+
+if __name__ == "__main__":
+    opt = utils.Options().get_options()
+    model = TSN(opt)
+>>>>>>> 33399534affccf16ee9ff03c070018ed48695c24
     summary(model.cuda(), input_size=(opt.feature_dim, opt.num_frames))
